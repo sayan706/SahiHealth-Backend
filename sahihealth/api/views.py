@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
+from datetime import datetime
 
 
 # Create your views here.
@@ -41,32 +42,70 @@ class Register(APIView):
             return Response({
                 "message": str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
-        
-class Login(APIView):
-    
-    def post(self,request):
-        try:
-            username=request.data['username']
-            password=request.data['password']
-            if not User.objects.filter(username=username).exists():
-                return Response({"no user found!"},status=status.HTTP_401_UNAUTHORIZED)
-            
-            user=User.objects.get(username=username)
 
+
+
+class Login(APIView):
+
+    def post(self, request):
+        try:
+            username = request.data.get('username')
+            password = request.data.get('password')
+
+            # Check if the username exists
+            if not User.objects.filter(username=username).exists():
+                return Response({
+                    "status": 400,
+                    "message": "No user found!",
+                    "errors": {
+                        "name": "UserNotFound",
+                        "error": "The username does not exist."
+                    },
+                    "timestamp": int(datetime.now().timestamp())
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            user = User.objects.get(username=username)
+
+            # Check if the password is correct
             if not user.check_password(password):
-                return Response({"wrong password!"},status=status.HTTP_401_UNAUTHORIZED)
-            
-            token,created=Token.objects.get_or_create(user=user)
-            
-            serializer=UserSerializer(user)
+                return Response({
+                    "status": 400,
+                    "message": "Wrong password!",
+                    "errors": {
+                        "name": "InvalidCredentials",
+                        "error": "The password provided is incorrect."
+                    },
+                    "timestamp": int(datetime.now().timestamp())
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # Generate or retrieve the token
+            token, created = Token.objects.get_or_create(user=user)
+
+            # Serialize the user data
+            serializer = UserSerializer(user)
+
+            # Successful login response
             return Response({
-                "message":"logged in successfully!",
-                "user":serializer.data,
-                "token":token.key
-            },status=status.HTTP_200_OK)
-            
+                "status": 200,
+                "message": "Logged in successfully!",
+                "data": {
+                    "user": serializer.data,
+                    "token": token.key
+                },
+                "timestamp": int(datetime.now().timestamp())
+            }, status=status.HTTP_200_OK)
+
         except Exception as e:
-            return Response({"message":str(e)},status=status.HTTP_400_BAD_REQUEST)
+            # Generic error response
+            return Response({
+                "status": 500,
+                "message": "An error occurred during login.",
+                "errors": {
+                    "name": "InternalServerError",
+                    "error": str(e)
+                },
+                "timestamp": int(datetime.now().timestamp())
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 class Logout(APIView):
     def post(self, request):

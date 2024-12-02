@@ -16,13 +16,31 @@ class UserSerializer(serializers.ModelSerializer):
 #Register Serializer
 class RegisterSerializer(serializers.ModelSerializer):
     address = serializers.CharField(max_length=255, write_only=True)
+    role = serializers.CharField(write_only=True)  
+
     class Meta:
         model = User
-        fields = ('id','username','email','password','first_name','address')
-        extra_kwargs = {"password":{"write_only":True}}
+        fields = ('id', 'username', 'email', 'password', 'first_name', 'address', 'role')
+        extra_kwargs = {"password": {"write_only": True}}
+
     def create(self, validated_data):
-        user = User.objects.create_user(validated_data['username'],validated_data['email'],validated_data['password'])
-        role=Role.objects.get(role_id=5)
+        # Extract role name from validated_data
+        role_name = validated_data.pop('role', None)
+
+        # Create the User instance
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+
+        # Retrieve the Role instance by name
+        try:
+            role = Role.objects.get(name=role_name)
+        except Role.DoesNotExist:
+            raise serializers.ValidationError({"role": "Invalid role name provided."})
+
+        # Create the DoctorsandCompunders instance
         DoctorsandCompunder = DoctorsandCompunders.objects.create(
             username=validated_data['username'],
             name=validated_data['first_name'],
@@ -30,9 +48,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             address=validated_data['address'],
             role=role
         )
-        DoctorsandCompunder.save()
+
         return user
-    
+
 
 class DoctorandCompounderSerializer(serializers.ModelSerializer):
     class Meta:
