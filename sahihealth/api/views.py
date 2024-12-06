@@ -55,7 +55,7 @@ class Login(APIView):
             # Check if the username exists
             if not User.objects.filter(username=username).exists():
                 return Response({
-                    "status": 400,
+                    "status": status.HTTP_400_BAD_REQUEST,
                     "message": "No user found!",
                     "errors": {
                         "name": "UserNotFound",
@@ -69,7 +69,7 @@ class Login(APIView):
             # Check if the password is correct
             if not user.check_password(password):
                 return Response({
-                    "status": 400,
+                    "status": status.HTTP_400_BAD_REQUEST,
                     "message": "Wrong password!",
                     "errors": {
                         "name": "InvalidCredentials",
@@ -86,7 +86,7 @@ class Login(APIView):
 
             # Successful login response
             return Response({
-                "status": 200,
+                "status": status.HTTP_200_OK,
                 "message": "Logged in successfully!",
                 "data": {
                     "user": serializer.data,
@@ -98,7 +98,7 @@ class Login(APIView):
         except Exception as e:
             # Generic error response
             return Response({
-                "status": 500,
+                "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
                 "message": "An error occurred during login.",
                 "errors": {
                     "name": "InternalServerError",
