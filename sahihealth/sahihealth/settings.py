@@ -40,6 +40,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -95,6 +97,11 @@ DATABASES = {
     #     'PORT': os.getenv('LOCAL_DATABASE_PORT', "3306"),
     #     'USER': os.getenv('LOCAL_DATABASE_USER', "root"),
     #     'PASSWORD': os.getenv('LOCAL_DATABASE_PASSWORD', "root"),
+    #     'OPTIONS': {
+    #         'init_command': "SET sql_mode='STRICT_TRANS_TABLES', innodb_strict_mode=1",
+    #         'charset': 'utf8mb4',
+    #         "autocommit": True,
+    #     }
     # }
 
     'default': {
@@ -104,6 +111,11 @@ DATABASES = {
         'PORT': os.getenv('DATABASE_PORT', "3306"),
         'USER': os.getenv('DATABASE_USER', "root"),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', "root"),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES', innodb_strict_mode=1",
+            'charset': 'utf8mb4',
+            "autocommit": True,
+        }
     }
 }
 
@@ -142,15 +154,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+MEDIA_URL = '/media/'
+STATIC_URL = '/static/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Directory where collectstatic will place all static files
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Or another folder of your choice
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# Additional static file directories (optional)
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # For extra static files
-]
+# # Additional static file directories (optional)
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
