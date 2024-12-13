@@ -4,9 +4,8 @@ from rest_framework.views import APIView
 from utils.response_handler import custom_response_handler
 from rest_framework import status
 from app.models import Doctor
-from app.serializers.doctor import DoctorSerializer , ProfileSerializer
+from app.serializers.doctor import DoctorSerializer, ProfileSerializer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
 
 
 # Create your views here.
@@ -14,32 +13,30 @@ class DoctorAPIView(APIView):
   def get(self, request, pk=None, format=None):
     data = None
     message = None
+    doctor_id = None
     query_params = request.query_params
 
     if pk is not None:
-      try:
-        doctor = Doctor.objects.get(id=pk)
-        serializedDoctor = DoctorSerializer(instance=doctor)
-        data = serializedDoctor.data
-        message = "Get Doctor"
-      except Doctor.DoesNotExist:
-        raise exceptions.DoesNotExistException(
-          detail=f'No doctor found with id {pk}',
-          code="Doctor Not Found"
-        )
+      doctor_id = pk
     elif 'doctor_id' in query_params:
+      doctor_id = query_params['doctor_id']
+
+    if doctor_id is not None:
       try:
-        doctor = Doctor.objects.get(id=query_params['doctor_id'])
+        doctor = Doctor.objects.get(id=doctor_id)
         serializedDoctor = DoctorSerializer(instance=doctor)
         data = serializedDoctor.data
         message = "Get Doctor"
       except Doctor.DoesNotExist:
         raise exceptions.DoesNotExistException(
-          detail=f'No doctor found with id {query_params["doctor_id"]}',
-          code="Doctor Not Found"
+          detail=f'No doctor found with id {doctor_id}',
+          code='Doctor not found'
         )
     elif not ('page_size' in query_params and 'page' in query_params):
-      raise exceptions.GenericException(detail='Provide page_size & page in query params')
+      raise exceptions.GenericException(
+        detail='Provide page_size & page in query params',
+        code='Page Configuration Missing'
+      )
     else:
       current_page = 1
       page_size = int(query_params['page_size'])
@@ -55,15 +52,16 @@ class DoctorAPIView(APIView):
         doctors = paginator.page(1)
       except EmptyPage:
         doctors = []
-      
+
       serializedDoctors = DoctorSerializer(instance=doctors, many=True)
       data = {
-        'values': serializedDoctors.data,
+        'count': len(serializedDoctors.data),
         'total_count': total_count,
-        'page_size': page_size,
+        'total_pages': paginator.num_pages,
         'current_page': current_page,
         'next_page': None if (paginator.num_pages - current_page) <= 0 else current_page + 1,
-        'total_pages': paginator.num_pages,
+        'page_size': page_size,
+        'values': serializedDoctors.data,
       }
       message = "Get All Doctors"
 
@@ -76,54 +74,63 @@ class DoctorAPIView(APIView):
   def patch(self, request, pk=None, format=None):
     data = None
     message = None
+    doctor = None
+    doctor_id = None
+    request_data = request.data
     query_params = request.query_params
 
-    
-    if 'doctor_id' not in query_params:
-        raise exceptions.GenericException(detail='Provide doctor_id in query params')
+    if pk is not None:
+      doctor_id = pk
+    elif 'doctor_id' in query_params:
+      doctor_id = query_params['doctor_id']
+    else:
+      raise exceptions.GenericException(
+        detail='Mention id as path variable or doctor_id in query params',
+        code='Identifier not found for the doctor'
+      )
 
     try:
-        doctor = Doctor.objects.get(id=query_params['doctor_id'])
+      doctor = Doctor.objects.get(id=doctor_id)
     except Doctor.DoesNotExist:
-        raise exceptions.DoesNotExistException(
-            detail=f'No doctor found with id {query_params["doctor_id"]}',
-            code="Doctor Not Found"
-        )
+      raise exceptions.DoesNotExistException(
+        detail=f'No doctor found with id {doctor_id}',
+        code='Doctor not found'
+      )
 
-    request_data = request.data
-
-  
+    # Update profile if present
     profile_data = request_data.get('profile', {})
+
     if profile_data:
-        # Get the existing profile linked to the doctor
-        profile_instance = doctor.profile  # doctor.profile gives the associated profile
+      # Get the existing profile linked to the doctor
+      doctorProfile = doctor.profile
+      serializedProfile = ProfileSerializer(instance=doctorProfile, data=profile_data, partial=True)
 
-        # Make sure that we are only updating the existing profile and not creating a new one
-        
-        print(f"Updating Profile for Doctor: {doctor.id}")
-        profile_serializer = ProfileSerializer(instance=profile_instance, data=profile_data, partial=True)
-        print(f"Profile data: {profile_data}")
-        if profile_serializer.is_valid(raise_exception=True):
-            profile_serializer.save()  # This will update the existing profile, not create a new one
+      if serializedProfile.is_valid(raise_exception=True):
+        # Update the profile instance
+        serializedProfile.save()
 
-    # Handle doctor data (e.g., updating speciality)
+    # Update doctor specific data if present
     doctor_data = {}
+
+    if 'is_active' in request_data:
+      doctor_data['is_active'] = request_data['is_active']
     if 'speciality' in request_data:
-        doctor_data['speciality'] = request_data['speciality']
+      doctor_data['speciality'] = request_data['speciality']
 
     if doctor_data:
-        # Use the DoctorSerializer to update the Doctor instance (but NOT the Profile!)
-        doctor_serializer = DoctorSerializer(instance=doctor, data=doctor_data, partial=True)
-        if doctor_serializer.is_valid(raise_exception=True):
-            doctor_serializer.save()  # Update the doctor instance
+      serializedDoctor = DoctorSerializer(instance=doctor, data=doctor_data, partial=True)
+
+      if serializedDoctor.is_valid(raise_exception=True):
+        # Update the doctor instance
+        serializedDoctor.save()
 
     # Serialize the updated doctor instance
-    serialized_doctor = DoctorSerializer(instance=doctor)
-    data = serialized_doctor.data
-    message = "Doctor updated successfully"
+    serializedDoctor = DoctorSerializer(instance=doctor)
+    data = serializedDoctor.data
+    message = "Profile updated successfully"
 
     return custom_response_handler(
-        status=status.HTTP_200_OK,
-        message=message,
-        data=data
+      status=status.HTTP_200_OK,
+      message=message,
+      data=data
     )

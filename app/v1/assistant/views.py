@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from utils.response_handler import custom_response_handler
 from rest_framework import status
 from app.models import Assistant
-from app.serializers.assistant import AssistantSerializer , ProfileSerializer
+from app.serializers.assistant import AssistantSerializer, ProfileSerializer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
@@ -13,32 +13,30 @@ class AssistantAPIView(APIView):
   def get(self, request, pk=None, format=None):
     data = None
     message = None
+    assistant_id = None
     query_params = request.query_params
 
     if pk is not None:
-      try:
-        assistant = Assistant.objects.get(id=pk)
-        serializedAssistant = AssistantSerializer(instance=assistant)
-        data = serializedAssistant.data
-        message = "Get Assistant"
-      except Assistant.DoesNotExist:
-        raise exceptions.DoesNotExistException(
-          detail=f'No assistant found with id {pk}',
-          code="Assistant Not Found"
-        )
+      assistant_id = pk
     elif 'assistant_id' in query_params:
+      assistant_id = query_params['assistant_id']
+
+    if assistant_id is not None:
       try:
-        assistant = Assistant.objects.get(id=query_params['assistant_id'])
+        assistant = Assistant.objects.get(id=assistant_id)
         serializedAssistant = AssistantSerializer(instance=assistant)
         data = serializedAssistant.data
         message = "Get Assistant"
       except Assistant.DoesNotExist:
         raise exceptions.DoesNotExistException(
-          detail=f'No assistant found with id {query_params["assistant_id"]}',
-          code="Assistant Not Found"
+          detail=f'No assistant found with id {assistant_id}',
+          code='Assistant not found'
         )
     elif not ('page_size' in query_params and 'page' in query_params):
-      raise exceptions.GenericException(detail='Provide page_size & page in query params')
+      raise exceptions.GenericException(
+        detail='Provide page_size & page in query params',
+        code='Page Configuration Missing'
+      )
     else:
       current_page = 1
       page_size = int(query_params['page_size'])
@@ -54,15 +52,16 @@ class AssistantAPIView(APIView):
         assistants = paginator.page(1)
       except EmptyPage:
         assistants = []
-      
+
       serializedAssistants = AssistantSerializer(instance=assistants, many=True)
       data = {
-        'values': serializedAssistants.data,
+        'count': len(serializedAssistants.data),
         'total_count': total_count,
-        'page_size': page_size,
+        'total_pages': paginator.num_pages,
         'current_page': current_page,
         'next_page': None if (paginator.num_pages - current_page) <= 0 else current_page + 1,
-        'total_pages': paginator.num_pages,
+        'page_size': page_size,
+        'values': serializedAssistants.data,
       }
       message = "Get All Assistants"
 
@@ -71,56 +70,65 @@ class AssistantAPIView(APIView):
       message=message,
       data=data
     )
-  
+
   def patch(self, request, pk=None, format=None):
-        data = None
-        message = None
-        query_params = request.query_params
+    data = None
+    message = None
+    assistant = None
+    assistant_id = None
+    request_data = request.data
+    query_params = request.query_params
 
-        if 'assistant_id' not in query_params:
-            raise exceptions.GenericException(detail='Provide assistant_id in query params')
+    if pk is not None:
+      assistant_id = pk
+    elif 'assistant_id' in query_params:
+      assistant_id = query_params['assistant_id']
+    else:
+      raise exceptions.GenericException(
+        detail='Mention id as path variable or assistant_id in query params',
+        code='Identifier not found for the assistant'
+      )
 
-        try:
-            assistant = Assistant.objects.get(id=query_params['assistant_id'])
-        except Assistant.DoesNotExist:
-            raise exceptions.DoesNotExistException(
-                detail=f'No assistant found with id {query_params["assistant_id"]}',
-                code="Assistant Not Found"
-            )
+    try:
+      assistant = Assistant.objects.get(id=assistant_id)
+    except Assistant.DoesNotExist:
+      raise exceptions.DoesNotExistException(
+        detail=f'No assistant found with id {assistant_id}',
+        code='Assistant not found'
+      )
 
-        request_data = request.data
+    # Update profile if present
+    profile_data = request_data.get('profile', {})
 
-        # Update Profile data if present
-        profile_data = request_data.get('profile', {})
-        if profile_data:
-            # Get the existing profile linked to the assistant
-            profile_instance = assistant.profile
+    if profile_data:
+      # Get the existing profile linked to the assistant
+      assistantProfile = assistant.profile
+      serializedProfile = ProfileSerializer(instance=assistantProfile, data=profile_data, partial=True)
 
-            print(f"Updating Profile for Assistant: {assistant.id}")
-            profile_serializer = ProfileSerializer(instance=profile_instance, data=profile_data, partial=True)
-            print(f"Profile data: {profile_data}")
-            if profile_serializer.is_valid(raise_exception=True):
-                profile_serializer.save()  # Update the existing profile
+      if serializedProfile.is_valid(raise_exception=True):
+        # Update the profile instance
+        serializedProfile.save()
 
-        # Update Assistant-specific data if present
-        assistant_data = {}
-        if 'role' in request_data:
-            assistant_data['role'] = request_data['role']
-        if 'is_active' in request_data:
-            assistant_data['is_active'] = request_data['is_active']
+    # Update assistant specific data if present
+    assistant_data = {}
 
-        if assistant_data:
-            assistant_serializer = AssistantSerializer(instance=assistant, data=assistant_data, partial=True)
-            if assistant_serializer.is_valid(raise_exception=True):
-                assistant_serializer.save()  # Update the assistant instance
+    if 'is_active' in request_data:
+      assistant_data['is_active'] = request_data['is_active']
 
-        # Serialize the updated assistant instance
-        serialized_assistant = AssistantSerializer(instance=assistant)
-        data = serialized_assistant.data
-        message = "Assistant updated successfully"
+    if assistant_data:
+      serializedAssistant = AssistantSerializer(instance=assistant, data=assistant_data, partial=True)
 
-        return custom_response_handler(
-            status=status.HTTP_200_OK,
-            message=message,
-            data=data
-        )
+      if serializedAssistant.is_valid(raise_exception=True):
+        # Update the assistant instance
+        serializedAssistant.save()
+
+    # Serialize the updated assistant instance
+    serializedAssistant = AssistantSerializer(instance=assistant)
+    data = serializedAssistant.data
+    message = "Profile updated successfully"
+
+    return custom_response_handler(
+      status=status.HTTP_200_OK,
+      message=message,
+      data=data
+    )
