@@ -78,7 +78,7 @@ class DoctorAPIView(APIView):
     message = None
     query_params = request.query_params
 
-    # Check if 'doctor_id' is provided in the query params
+    
     if 'doctor_id' not in query_params:
         raise exceptions.GenericException(detail='Provide doctor_id in query params')
 
@@ -92,7 +92,7 @@ class DoctorAPIView(APIView):
 
     request_data = request.data
 
-    # Handle profile data (ensure we only update the existing profile)
+  
     profile_data = request_data.get('profile', {})
     if profile_data:
         # Get the existing profile linked to the doctor
