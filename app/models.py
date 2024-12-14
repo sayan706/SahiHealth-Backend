@@ -69,3 +69,30 @@ class Assistant(models.Model):
 
   def __str__(self):
     return f"Assistant<{self.profile.user.username} ({self.profile.role})>"
+
+class Patient(models.Model):
+    GENDER_CHOICES = [
+        ('MALE', 'Male'),
+        ('FEMALE', 'Female'),
+        ('OTHER', 'Other'),
+    ]
+
+    name = models.CharField(max_length=100)
+    age = models.PositiveIntegerField()
+    address = models.TextField(blank=True, null=True)
+    phone_number = models.CharField(max_length=15, unique=True)
+    email = models.EmailField(max_length=200, unique=True, null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True, null=True)
+    created_by = models.ForeignKey(
+        Profile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="added_patients",
+        help_text="The doctor or assistant added this patient."
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Patient<{self.name}, {self.age} years>"

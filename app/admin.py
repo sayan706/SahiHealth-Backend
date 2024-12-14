@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Doctor, Assistant
+from .models import Profile, Doctor, Assistant , Patient
 
 
 # Register your models here.
@@ -16,3 +16,7 @@ class DoctorAdmin(admin.ModelAdmin):
 @admin.register(Assistant)
 class AssistantAdmin(admin.ModelAdmin):
   list_display = ['id', 'profile']
+
+@admin.register(Patient)
+class PatientAdmin(admin.ModelAdmin):
+  list_display = ['id', 'name', 'age', 'gender', 'phone_number']
