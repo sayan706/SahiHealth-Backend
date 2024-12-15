@@ -18,7 +18,16 @@ load_dotenv()
 @api_view(['POST', 'DELETE'])
 def upload_dp(request):
   profile = None
-  profile_id = request.query_params['profile_id'][0]
+  profile_id = None
+  query_params = request.query_params
+
+  if 'profile_id' in query_params:
+    profile_id = query_params['profile_id'][0]
+  else:
+    raise exceptions.GenericException(
+      detail='Mention profile_id in query params',
+      code='Identifier not found for the profile'
+    )
 
   try:
     profile = Profile.objects.get(id=profile_id)
@@ -37,6 +46,7 @@ def upload_dp(request):
       'file_ext': request.data.get('file_ext'),
       'file_name': request.data.get('file_name'),
     }
+
     serializedFileUpload = FileUploadSerializer(data=request_data)
 
     if serializedFileUpload.is_valid():
