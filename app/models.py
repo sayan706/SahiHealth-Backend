@@ -28,6 +28,7 @@ class Profile(models.Model):
   phone_number = models.CharField(max_length=15, unique=True, null=True, blank=True)
   gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True, null=True)
   location = models.CharField(max_length=255, blank=True, null=True)
+  dp_url = models.URLField(blank=True, null=True)
   profile_picture = models.ImageField(upload_to=profile_picture_path, blank=True, null=True)
   role = models.CharField(max_length=10, choices=ROLE_CHOICES)
   is_active = models.BooleanField(default=True)

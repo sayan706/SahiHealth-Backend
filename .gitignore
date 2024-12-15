@@ -1,5 +1,7 @@
 # Custom stuff
 # Usually these files are written for custom needs of developer(s)
+media/*
+!media/.gitkeep
 
 # Miscellaneous
 .idea/
