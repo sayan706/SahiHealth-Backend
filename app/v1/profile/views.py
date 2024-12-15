@@ -1,4 +1,5 @@
 import os
+import base64
 import shutil
 
 from utils import exceptions
@@ -32,7 +33,7 @@ def upload_dp(request):
     file_ext = None
     file_name = None
     request_data = {
-      'file': request.FILES.get('file'),
+      'file': request.data.get('file'),
       'file_ext': request.data.get('file_ext'),
       'file_name': request.data.get('file_name'),
     }
@@ -44,6 +45,12 @@ def upload_dp(request):
       file_name = serializedFileUpload.validated_data['file_name']
     else:
       raise exceptions.InvalidRequestBodyException(detail=serializedFileUpload.errors)
+
+    # Decoding the base64 string received in the file
+    try:
+      decoded_file = base64.b64decode(file)
+    except:
+      raise exceptions.GenericException(detail="Invalid base64 file content")
 
     if not file:
       raise exceptions.GenericException(
@@ -63,8 +70,7 @@ def upload_dp(request):
       final_file_path = os.path.join(upload_dir, uploaded_file_name)
 
       with open(final_file_path, 'wb') as dp:
-        for chunk in file.chunks():
-          dp.write(chunk)
+        dp.write(decoded_file)
 
       BACKEND_URL = os.getenv('BACKEND_URL', default='http://localhost:8000')
       uploaded_file_url = f'{BACKEND_URL}{settings.MEDIA_URL}profile_picture/{profile.role.lower()}/{profile.id}/{uploaded_file_name}'

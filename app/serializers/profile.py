@@ -27,7 +27,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class FileUploadSerializer(serializers.Serializer):
-  file = serializers.FileField(required=True)
+  file = serializers.CharField(required=True)
   file_ext = serializers.CharField(max_length=20, required=True)
   file_name = serializers.CharField(max_length=255, required=True)
 
