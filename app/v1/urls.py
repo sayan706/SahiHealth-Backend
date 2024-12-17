@@ -3,6 +3,7 @@ from app.v1.profile.views import upload_dp
 from app.v1.doctor.views import DoctorAPIView
 from app.v1.assistant.views import AssistantAPIView
 from app.v1.auth.views import LoginAPIView, LogoutAPIView
+from app.v1.patient.views import PatientAPIView
 
 
 urlpatterns=[
@@ -13,4 +14,6 @@ urlpatterns=[
   path('doctor/<int:pk>', DoctorAPIView.as_view()),
   path('assistant', AssistantAPIView.as_view()),
   path('assistant/<int:pk>', AssistantAPIView.as_view()),
+  path('patient', PatientAPIView.as_view()),
+  path('patient/<int:pk>', PatientAPIView.as_view()),
 ]
