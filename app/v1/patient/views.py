@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from utils.response_handler import custom_response_handler
 from rest_framework import status
-from app.models import Doctor, Patient
+from app.models import Profile, Doctor, Patient
 from app.serializers.patient import PatientSerializer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -12,37 +12,49 @@ class PatientAPIView(APIView):
   def get(self, request, pk=None, format=None):
     data = None
     message = None
-    patient_id = None
     assigned_doctor_id = None
+    creator_profile_id = None
     query_params = request.query_params
 
-    if pk is not None:
-      patient_id = pk
-    elif 'assigned_doctor_id' in query_params:
+    if 'assigned_doctor_id' in query_params:
       assigned_doctor_id = query_params['assigned_doctor_id']
+    elif 'creator_profile_id' in query_params:
+      creator_profile_id = query_params['creator_profile_id']
 
-    if patient_id is not None:
+    if pk is not None:
       try:
-        patient = Patient.objects.get(id=patient_id)
+        patient = Patient.objects.get(id=pk)
         serializedPatient = PatientSerializer(instance=patient)
         data = serializedPatient.data
         message = "Get Patient"
       except Patient.DoesNotExist:
         raise exceptions.DoesNotExistException(
-          detail=f'No patient found with id {patient_id}',
+          detail=f'No patient found with id {pk}',
           code='Patient not found'
         )
     elif assigned_doctor_id is not None:
       try:
-        # doctor = Doctor.objects.get(id=assigned_doctor_id)
+        Doctor.objects.get(id=assigned_doctor_id)
         patients = Patient.objects.filter(assigned_doctor=assigned_doctor_id)
         serializedPatients = PatientSerializer(instance=patients, many=True)
         data = serializedPatients.data
-        message = "Get All Patients by Doctor"
+        message = "Get Patients by Assigned Doctor"
       except Doctor.DoesNotExist:
         raise exceptions.DoesNotExistException(
           detail=f'No doctor found with id {assigned_doctor_id}',
           code='Doctor not found'
+        )
+    elif creator_profile_id is not None:
+      try:
+        Profile.objects.get(id=creator_profile_id)
+        patients = Patient.objects.filter(created_by=creator_profile_id)
+        serializedPatients = PatientSerializer(instance=patients, many=True)
+        data = serializedPatients.data
+        message = "Get Patients by Creator"
+      except Profile.DoesNotExist:
+        raise exceptions.DoesNotExistException(
+          detail=f'No profile found with id {creator_profile_id}',
+          code='Profile not found'
         )
     elif not ('page_size' in query_params and 'page' in query_params):
       raise exceptions.GenericException(
