@@ -24,7 +24,21 @@ class DoctorAPIView(APIView):
     if doctor_id is not None:
       try:
         doctor = Doctor.objects.get(id=doctor_id)
-        serializedDoctor = DoctorSerializer(instance=doctor)
+        serializedDoctor = DoctorSerializer(
+          instance=doctor,
+          profile_exclude=[
+            'id',
+            'is_active',
+            'created_at',
+            'updated_at'
+          ],
+          user_fields=[
+            'username',
+            'last_login',
+            'date_joined',
+            'user_permissions'
+          ]
+        )
         data = serializedDoctor.data
         message = "Get Doctor"
       except Doctor.DoesNotExist:
@@ -53,7 +67,17 @@ class DoctorAPIView(APIView):
       except EmptyPage:
         doctors = []
 
-      serializedDoctors = DoctorSerializer(instance=doctors, many=True)
+      serializedDoctors = DoctorSerializer(
+        instance=doctors,
+        many=True,
+        profile_exclude=[
+          'id',
+          'user',
+          'is_active',
+          'created_at',
+          'updated_at'
+        ]
+      )
       data = {
         'count': len(serializedDoctors.data),
         'total_count': total_count,
@@ -125,7 +149,21 @@ class DoctorAPIView(APIView):
         serializedDoctor.save()
 
     # Serialize the updated doctor instance
-    serializedDoctor = DoctorSerializer(instance=doctor)
+    serializedDoctor = DoctorSerializer(
+      instance=doctor,
+      profile_exclude=[
+        'id',
+        'is_active',
+        'created_at',
+        'updated_at'
+      ],
+      user_fields=[
+        'username',
+        'last_login',
+        'date_joined',
+        'user_permissions'
+      ]
+    )
     data = serializedDoctor.data
     message = "Profile updated successfully"
 

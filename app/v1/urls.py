@@ -7,6 +7,7 @@ from app.v1.habit.views import HabitAPIView
 from app.v1.patient.views import PatientAPIView
 from app.v1.auth.views import LoginAPIView, LogoutAPIView
 from app.v1.patient.views import PatientAPIView
+from app.v1.case.views import CaseAPIView
 
 
 urlpatterns=[
@@ -23,4 +24,6 @@ urlpatterns=[
   path('disease/<int:pk>', DiseaseAPIView.as_view()),
   path('habit', HabitAPIView.as_view()),
   path('habit/<int:pk>', HabitAPIView.as_view()),
+  path('case', CaseAPIView.as_view()),
+  path('case/<int:pk>', CaseAPIView.as_view()),
 ]

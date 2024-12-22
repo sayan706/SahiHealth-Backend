@@ -125,7 +125,7 @@ class Patient(models.Model):
   habits = models.ManyToManyField(Habit, blank=True, related_name="patients")
   other_habits = models.TextField(blank=True, null=True)
   created_by = models.ForeignKey(Profile, on_delete=models.SET_NULL, null=True, blank=True)
-  assigned_doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
+  doctors = models.ManyToManyField(Doctor, blank=True, related_name="patients")
   is_active = models.BooleanField(default=True)
   # created_at = models.DateTimeField(default=datetime.now)
   created_at = models.DateTimeField(auto_now_add=True)
@@ -135,4 +135,110 @@ class Patient(models.Model):
   admin_objects = AdminManager()
 
   def __str__(self):
-    return f"Patient<{self.id} - {self.full_name} ({self.phone_number})>"
+    return f"Patient<{self.full_name} ({self.phone_number})>"
+
+
+class Case(models.Model):
+  PAST_TREATMENT_CHOICES = [
+    ('YES', 'Yes'),
+    ('NO', 'No'),
+  ]
+
+  TREATMENT_LOCATION_CHOICES = [
+    ('VILLAGE_RMP', 'Village RMP'),
+    ('TOWN_RMP', 'Town RMP'),
+    ('CITY_SPECIALIST', 'City Specialist'),
+  ]
+
+  TREATMENT_TYPE_CHOICES = [
+    ('ORAL_MEDICINES', 'Only Oral Medicines'),
+    ('IV_IM_DRIP', 'Only IV/IM/Drip'),
+    ('BOTH_ORAL_IV_IM_DRIP', 'Both Oral & IV/IM/Drip'),
+  ]
+
+  patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+  assigned_doctor = models.ForeignKey(Doctor, on_delete=models.SET_NULL, blank=True, null=True)
+  past_treatment = models.CharField(max_length=3, choices=PAST_TREATMENT_CHOICES, blank=True, null=True)
+  treatment_location = models.CharField(max_length=50, choices=TREATMENT_LOCATION_CHOICES, blank=True, null=True)
+  treatment_type = models.CharField(max_length=50, choices=TREATMENT_TYPE_CHOICES, blank=True, null=True)
+  note = models.TextField(blank=True, null=True)
+  is_follow_up = models.BooleanField(default=False)
+  follow_up_date = models.DateTimeField(blank=True, null=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"Case<{self.patient.full_name} ({self.created_at})>"
+
+
+class CaseChiefComplaint(models.Model):
+  SEVERITY_CHOICES = [
+    ('MILD', 'Mild'),
+    ('MODERATE', 'Moderate'),
+    ('SEVERE', 'Severe'),
+  ]
+
+  DURATION_UNIT_CHOICES = [
+    ('DAY', 'Day'),
+    ('WEEK', 'Week'),
+  ]
+
+  case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name="chief_complaints")
+  title = models.CharField(max_length=255, blank=True, null=True)
+  severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, blank=True, null=True)
+  duration = models.PositiveIntegerField(blank=True, null=True)
+  duration_unit = models.CharField(max_length=5, choices=DURATION_UNIT_CHOICES, blank=True, null=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"CaseChiefComplaint<{self.title} ({self.severity} - {self.duration} {self.duration_unit})>"
+
+
+class CaseFinding(models.Model):
+  case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name="findings")
+  title = models.CharField(max_length=255, blank=True, null=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"CaseFinding<{self.title}>"
+
+
+class CaseDocument(models.Model):
+  DOCUMENT_SECTION_CHOICES = [
+    ('MEDICINE_PHOTO', 'Medicine Photo'),
+    ('LAB_REPORT', 'Lab Report'),
+    ('PHOTO', 'Photo'),
+  ]
+
+  case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name="documents")
+  file_name = models.CharField(max_length=255, blank=True, null=True)
+  file_extension = models.CharField(max_length=10, blank=True, null=True)
+  file_url = models.URLField(blank=True, null=True)
+  document_section = models.CharField(max_length=60, choices=DOCUMENT_SECTION_CHOICES, blank=True, null=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"CaseDocument<{self.file_name}.{self.file_extension} ({self.file_url})>"

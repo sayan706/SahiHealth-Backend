@@ -1,10 +1,9 @@
 from utils import exceptions
-from django.shortcuts import render
 from rest_framework.views import APIView
 from utils.response_handler import custom_response_handler
 from rest_framework import status
 from app.models import Profile, Doctor, Patient
-from app.serializers.patient import PatientSerializer
+from app.serializers.patient import PatientSerializer, CreatePatientSerializer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
@@ -12,19 +11,19 @@ class PatientAPIView(APIView):
   def get(self, request, pk=None, format=None):
     data = None
     message = None
-    assigned_doctor_id = None
+    doctor_id = None
     creator_profile_id = None
     query_params = request.query_params
 
-    if 'assigned_doctor_id' in query_params:
-      assigned_doctor_id = query_params['assigned_doctor_id']
+    if 'doctor_id' in query_params:
+      doctor_id = query_params['doctor_id']
     elif 'creator_profile_id' in query_params:
       creator_profile_id = query_params['creator_profile_id']
 
     if pk is not None:
       try:
         patient = Patient.objects.get(id=pk)
-        serializedPatient = PatientSerializer(instance=patient)
+        serializedPatient = PatientSerializer(instance=patient, exclude=['doctors'])
         data = serializedPatient.data
         message = "Get Patient"
       except Patient.DoesNotExist:
@@ -32,23 +31,45 @@ class PatientAPIView(APIView):
           detail=f'No patient found with id {pk}',
           code='Patient not found'
         )
-    elif assigned_doctor_id is not None:
+    elif doctor_id is not None:
       try:
-        Doctor.objects.get(id=assigned_doctor_id)
-        patients = Patient.objects.filter(assigned_doctor=assigned_doctor_id)
-        serializedPatients = PatientSerializer(instance=patients, many=True)
+        doctor = Doctor.objects.get(id=doctor_id)
+        patients = Patient.objects.filter(doctors=doctor)
+        serializedPatients = PatientSerializer(
+          instance=patients,
+          many=True,
+          fields=[
+            'id',
+            'full_name',
+            'phone_number',
+            'gender',
+            'age',
+            'created_at',
+          ]
+        )
         data = serializedPatients.data
-        message = "Get Patients by Assigned Doctor"
+        message = "Get Patients by Doctor"
       except Doctor.DoesNotExist:
         raise exceptions.DoesNotExistException(
-          detail=f'No doctor found with id {assigned_doctor_id}',
+          detail=f'No doctor found with id {doctor_id}',
           code='Doctor not found'
         )
     elif creator_profile_id is not None:
       try:
         Profile.objects.get(id=creator_profile_id)
         patients = Patient.objects.filter(created_by=creator_profile_id)
-        serializedPatients = PatientSerializer(instance=patients, many=True)
+        serializedPatients = PatientSerializer(
+          instance=patients,
+          many=True,
+          fields=[
+            'id',
+            'full_name',
+            'phone_number',
+            'gender',
+            'age',
+            'created_at',
+          ]
+        )
         data = serializedPatients.data
         message = "Get Patients by Creator"
       except Profile.DoesNotExist:
@@ -77,7 +98,18 @@ class PatientAPIView(APIView):
       except EmptyPage:
         patients = []
 
-      serializedPatients = PatientSerializer(instance=patients, many=True)
+      serializedPatients = PatientSerializer(
+        instance=patients,
+        many=True,
+        fields=[
+          'id',
+          'full_name',
+          'phone_number',
+          'gender',
+          'age',
+          'created_at',
+        ]
+      )
       data = {
         'count': len(serializedPatients.data),
         'total_count': total_count,
@@ -94,3 +126,24 @@ class PatientAPIView(APIView):
       message=message,
       data=data
     )
+
+  def post(self, request, format=None):
+    query_params = request.query_params
+    request.data['doctor_id'] = query_params['doctor_id']
+    request.data['creator_profile_id'] = query_params['creator_profile_id']
+    serializedCreatePatient = CreatePatientSerializer(data=request.data)
+
+    if serializedCreatePatient.is_valid():
+      patient = serializedCreatePatient.save()
+      serializedPatient = PatientSerializer(instance=patient)
+
+      return custom_response_handler(
+        status=status.HTTP_200_OK,
+        message="Patient created successfully",
+        data=serializedPatient.data
+      )
+    else:
+      raise exceptions.InvalidSerializerException(
+        detail=serializedCreatePatient.errors,
+        code='Invalid Serializer'
+      )

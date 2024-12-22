@@ -1,8 +1,10 @@
+# from rest_framework import serializers
+from app.dynamic_serializer import DynamicFieldsModelSerializer
 from django.contrib.auth.models import User
-from rest_framework import serializers
 
 
-class UserSerializer(serializers.ModelSerializer):
+# class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(DynamicFieldsModelSerializer):
   class Meta:
     model = User
     fields = [
@@ -13,5 +15,5 @@ class UserSerializer(serializers.ModelSerializer):
       'is_staff',
       'is_active',
       'date_joined',
-      'user_permissions',
+      'user_permissions'
     ]

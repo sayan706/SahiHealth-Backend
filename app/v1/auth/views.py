@@ -51,10 +51,38 @@ class LoginAPIView(APIView):
 
     if profile.role == 'DOCTOR':
       doctor = Doctor.objects.get(profile=profile)
-      serializedUserData = DoctorSerializer(instance=doctor)
+      serializedUserData = DoctorSerializer(
+        instance=doctor,
+        profile_exclude=[
+          'id',
+          'is_active',
+          'created_at',
+          'updated_at'
+        ],
+        user_fields=[
+          'username',
+          'last_login',
+          'date_joined',
+          'user_permissions'
+        ]
+      )
     elif profile.role == 'ASSISTANT':
       assistant = Assistant.objects.get(profile=profile)
-      serializedUserData = AssistantSerializer(instance=assistant)
+      serializedUserData = AssistantSerializer(
+        instance=assistant,
+        profile_exclude=[
+          'id',
+          'is_active',
+          'created_at',
+          'updated_at'
+        ],
+        user_fields=[
+          'username',
+          'last_login',
+          'date_joined',
+          'user_permissions'
+        ]
+      )
     else:
       raise exceptions.GenericException(
         detail=f"Either 'DOCTOR' or 'ASSISTANT' is allowed as a role",

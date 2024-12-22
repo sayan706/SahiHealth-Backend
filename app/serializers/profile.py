@@ -1,10 +1,34 @@
 from rest_framework import serializers
+from app.dynamic_serializer import DynamicFieldsModelSerializer
 from app.models import Profile
 from app.serializers.user import UserSerializer
 
 
-class ProfileSerializer(serializers.ModelSerializer):
-  user = UserSerializer()
+# class ProfileSerializer(serializers.ModelSerializer):
+class ProfileSerializer(DynamicFieldsModelSerializer):
+  # user = UserSerializer()
+  user = serializers.SerializerMethodField()
+
+  def __init__(self, *args, **kwargs):
+    # Extract nested serializer arguments
+    user_fields = kwargs.pop('user_fields', None)
+    user_exclude = kwargs.pop('user_exclude', None)
+
+    # Initialize the parent class
+    super().__init__(*args, **kwargs)
+
+    # Store nested serializer arguments for later use
+    self.user_fields = user_fields
+    self.user_exclude = user_exclude
+
+  def get_user(self, obj):
+    # Pass the dynamic fields/exclude arguments to the nested ProfileSerializer
+    return UserSerializer(
+      obj.user,
+      context=self.context,
+      fields=self.user_fields,
+      exclude=self.user_exclude
+    ).data
 
   class Meta:
     model = Profile
@@ -17,7 +41,7 @@ class ProfileSerializer(serializers.ModelSerializer):
       'gender',
       'location',
       'dp_url',
-      'profile_picture',
+      # 'profile_picture',
       'role',
       'user',
       'is_active',

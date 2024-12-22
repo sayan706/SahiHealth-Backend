@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Doctor, Assistant, Disease, Habit, Patient
+from .models import Profile, Doctor, Assistant, Disease, Habit, Patient, Case, CaseChiefComplaint, CaseFinding, CaseDocument
 
 
 # Register your models here.
@@ -36,3 +36,23 @@ class HabitAdmin(admin.ModelAdmin):
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
   list_display = [i.name for i in Patient._meta.fields]
+
+
+@admin.register(Case)
+class CaseAdmin(admin.ModelAdmin):
+  list_display = [i.name for i in Case._meta.fields]
+
+
+@admin.register(CaseChiefComplaint)
+class CaseChiefComplaintAdmin(admin.ModelAdmin):
+  list_display = [i.name for i in CaseChiefComplaint._meta.fields]
+
+
+@admin.register(CaseFinding)
+class CaseFindingAdmin(admin.ModelAdmin):
+  list_display = [i.name for i in CaseFinding._meta.fields]
+
+
+@admin.register(CaseDocument)
+class CaseDocumentAdmin(admin.ModelAdmin):
+  list_display = [i.name for i in CaseDocument._meta.fields]

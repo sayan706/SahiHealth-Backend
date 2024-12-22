@@ -24,7 +24,21 @@ class AssistantAPIView(APIView):
     if assistant_id is not None:
       try:
         assistant = Assistant.objects.get(id=assistant_id)
-        serializedAssistant = AssistantSerializer(instance=assistant)
+        serializedAssistant = AssistantSerializer(
+          instance=assistant,
+          profile_exclude=[
+            'id',
+            'is_active',
+            'created_at',
+            'updated_at'
+          ],
+          user_fields=[
+            'username',
+            'last_login',
+            'date_joined',
+            'user_permissions'
+          ]
+        )
         data = serializedAssistant.data
         message = "Get Assistant"
       except Assistant.DoesNotExist:
@@ -53,7 +67,17 @@ class AssistantAPIView(APIView):
       except EmptyPage:
         assistants = []
 
-      serializedAssistants = AssistantSerializer(instance=assistants, many=True)
+      serializedAssistants = AssistantSerializer(
+        instance=assistants,
+        many=True,
+        profile_exclude=[
+          'id',
+          'user',
+          'is_active',
+          'created_at',
+          'updated_at'
+        ]
+      )
       data = {
         'count': len(serializedAssistants.data),
         'total_count': total_count,
@@ -123,7 +147,21 @@ class AssistantAPIView(APIView):
         serializedAssistant.save()
 
     # Serialize the updated assistant instance
-    serializedAssistant = AssistantSerializer(instance=assistant)
+    serializedAssistant = AssistantSerializer(
+      instance=assistant,
+      profile_exclude=[
+        'id',
+        'is_active',
+        'created_at',
+        'updated_at'
+      ],
+      user_fields=[
+        'username',
+        'last_login',
+        'date_joined',
+        'user_permissions'
+      ]
+    )
     data = serializedAssistant.data
     message = "Profile updated successfully"
 
