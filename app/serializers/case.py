@@ -23,6 +23,7 @@ class CaseSerializer(DynamicFieldsModelSerializer):
   assigned_doctor = DoctorSerializer(
     fields=[
       'id',
+      'degree',
       'speciality',
       'profile'
     ],

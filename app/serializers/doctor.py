@@ -2,12 +2,14 @@ from rest_framework import serializers
 from app.dynamic_serializer import DynamicFieldsModelSerializer
 from app.models import Doctor
 from app.serializers.profile import ProfileSerializer
+from app.serializers.speciality import SpecialitySerializer
 
 
 # class DoctorSerializer(serializers.ModelSerializer):
 class DoctorSerializer(DynamicFieldsModelSerializer):
   # profile = ProfileSerializer()
   profile = serializers.SerializerMethodField()
+  speciality = SpecialitySerializer(exclude=['id'])
 
   def __init__(self, *args, **kwargs):
     # Extract nested serializer arguments
@@ -41,6 +43,7 @@ class DoctorSerializer(DynamicFieldsModelSerializer):
     fields = [
       'id',
       'profile',
+      'degree',
       'speciality',
       'is_active',
       'created_at',

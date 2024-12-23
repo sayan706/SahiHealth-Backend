@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Doctor, Assistant, Disease, Habit, Patient, Case, CaseChiefComplaint, CaseFinding, CaseDocument
+from .models import Profile, Speciality, Doctor, Assistant, Disease, Habit, Patient, Case, CaseChiefComplaint, CaseFinding, CaseDocument
 
 
 # Register your models here.
@@ -7,6 +7,12 @@ from .models import Profile, Doctor, Assistant, Disease, Habit, Patient, Case, C
 class ProfileAdmin(admin.ModelAdmin):
   # list_display = ['id', 'user', 'first_name', 'last_name', 'phone_number', 'gender', 'role']
   list_display = [i.name for i in Profile._meta.fields]
+
+
+@admin.register(Speciality)
+class SpecialityAdmin(admin.ModelAdmin):
+  # list_display = ['id', 'profile', 'speciality']
+  list_display = [i.name for i in Speciality._meta.fields]
 
 
 @admin.register(Doctor)

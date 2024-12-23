@@ -34,9 +34,7 @@ class AssistantAPIView(APIView):
           ],
           user_fields=[
             'username',
-            'last_login',
-            'date_joined',
-            'user_permissions'
+            'date_joined'
           ]
         )
         data = serializedAssistant.data
@@ -157,9 +155,7 @@ class AssistantAPIView(APIView):
       ],
       user_fields=[
         'username',
-        'last_login',
-        'date_joined',
-        'user_permissions'
+        'date_joined'
       ]
     )
     data = serializedAssistant.data

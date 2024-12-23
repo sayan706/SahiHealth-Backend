@@ -1,6 +1,7 @@
 from django.urls import path
 from app.v1.profile.views import upload_dp
 from app.v1.doctor.views import DoctorAPIView
+from app.v1.speciality.views import SpecialityAPIView
 from app.v1.assistant.views import AssistantAPIView
 from app.v1.disease.views import DiseaseAPIView
 from app.v1.habit.views import HabitAPIView
@@ -26,4 +27,5 @@ urlpatterns=[
   path('habit/<int:pk>', HabitAPIView.as_view()),
   path('case', CaseAPIView.as_view()),
   path('case/<int:pk>', CaseAPIView.as_view()),
+  path('speciality', SpecialityAPIView.as_view()),
 ]

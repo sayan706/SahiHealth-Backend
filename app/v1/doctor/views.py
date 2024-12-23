@@ -34,9 +34,7 @@ class DoctorAPIView(APIView):
           ],
           user_fields=[
             'username',
-            'last_login',
-            'date_joined',
-            'user_permissions'
+            'date_joined'
           ]
         )
         data = serializedDoctor.data
@@ -52,10 +50,16 @@ class DoctorAPIView(APIView):
         code='Page Configuration Missing'
       )
     else:
+      doctors = []
       current_page = 1
       page_size = int(query_params['page_size'])
+      speciality_id = query_params.get('speciality_id', None)
 
-      doctors = Doctor.objects.all()
+      if speciality_id:
+        doctors = Doctor.objects.filter(speciality_id=speciality_id)
+      else:
+        doctors = Doctor.objects.all()
+
       total_count = len(doctors)
       paginator = Paginator(doctors, page_size)
 
@@ -136,10 +140,10 @@ class DoctorAPIView(APIView):
     # Update doctor specific data if present
     doctor_data = {}
 
+    if 'degree' in request_data:
+      doctor_data['degree'] = request_data['degree']
     if 'is_active' in request_data:
       doctor_data['is_active'] = request_data['is_active']
-    if 'speciality' in request_data:
-      doctor_data['speciality'] = request_data['speciality']
 
     if doctor_data:
       serializedDoctor = DoctorSerializer(instance=doctor, data=doctor_data, partial=True)
@@ -159,9 +163,7 @@ class DoctorAPIView(APIView):
       ],
       user_fields=[
         'username',
-        'last_login',
-        'date_joined',
-        'user_permissions'
+        'date_joined'
       ]
     )
     data = serializedDoctor.data

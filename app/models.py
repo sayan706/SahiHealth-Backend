@@ -44,9 +44,9 @@ class Profile(models.Model):
     return f"Profile<{self.user.username} ({self.role})>"
 
 
-class Doctor(models.Model):
-  profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
-  speciality = models.TextField(blank=True, null=True)
+class Speciality(models.Model):
+  title = models.CharField(max_length=320, unique=True)
+  description = models.TextField(blank=True, null=True)
   is_active = models.BooleanField(default=True)
   # created_at = models.DateTimeField(default=datetime.now)
   created_at = models.DateTimeField(auto_now_add=True)
@@ -56,7 +56,23 @@ class Doctor(models.Model):
   admin_objects = AdminManager()
 
   def __str__(self):
-    return f"Doctor<{self.profile.user.username} - {self.profile.first_name} {self.profile.last_name} ({self.speciality})>"
+    return f"Speciality<{self.title}>"
+
+
+class Doctor(models.Model):
+  profile = models.OneToOneField(Profile, on_delete=models.CASCADE)
+  degree = models.TextField(blank=True, null=True)
+  speciality = models.ForeignKey(Speciality, on_delete=models.SET_NULL, blank=True, null=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"Doctor<{self.profile.user.username} - {self.profile.first_name} {self.profile.last_name} ({self.speciality.title})>"
 
 
 class Assistant(models.Model):
