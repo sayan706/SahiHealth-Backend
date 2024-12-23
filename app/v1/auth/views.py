@@ -53,17 +53,25 @@ class LoginAPIView(APIView):
       doctor = Doctor.objects.get(profile=profile)
       serializedUserData = DoctorSerializer(
         instance=doctor,
-        profile_exclude=[
-          'id',
+        exclude=[
+          'degree',
+          'speciality',
           'is_active',
           'created_at',
           'updated_at'
         ],
-        user_fields=[
-          'username',
-          'last_login',
-          'date_joined',
-          'user_permissions'
+        profile_fields=[
+          'first_name',
+          'last_name',
+          'dp_url',
+          'role'
+        ],
+        profile_exclude=[
+          'id',
+          'user',
+          'is_active',
+          'created_at',
+          'updated_at'
         ]
       )
     elif profile.role == 'ASSISTANT':

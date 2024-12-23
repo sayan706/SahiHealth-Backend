@@ -11,6 +11,7 @@ from app.serializers.case_chief_complaint import CaseChiefComplaintSerializer
 # class CaseSerializer(serializers.ModelSerializer):
 class CaseSerializer(DynamicFieldsModelSerializer):
   patient = PatientSerializer(exclude=[
+    'id',
     'created_by',
     'doctors',
     'phone_number',
@@ -22,7 +23,6 @@ class CaseSerializer(DynamicFieldsModelSerializer):
 
   assigned_doctor = DoctorSerializer(
     fields=[
-      'id',
       'degree',
       'speciality',
       'profile'
