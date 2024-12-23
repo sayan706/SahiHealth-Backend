@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from utils.response_handler import custom_response_handler
 from rest_framework import status
-from app.models import Doctor
+from app.models import Speciality, Doctor
 from app.serializers.doctor import DoctorSerializer, ProfileSerializer
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
@@ -136,6 +136,12 @@ class DoctorAPIView(APIView):
       if serializedProfile.is_valid(raise_exception=True):
         # Update the profile instance
         serializedProfile.save()
+
+    # Update speciality if present
+    speciality_id = request_data.get('speciality_id', None)
+
+    if speciality_id is not None:
+      doctor.speciality = Speciality.objects.get(id=speciality_id)
 
     # Update doctor specific data if present
     doctor_data = {}

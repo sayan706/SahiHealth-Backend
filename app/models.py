@@ -72,7 +72,7 @@ class Doctor(models.Model):
   admin_objects = AdminManager()
 
   def __str__(self):
-    return f"Doctor<{self.profile.user.username} - {self.profile.first_name} {self.profile.last_name} ({self.speciality.title})>"
+    return f"Doctor<{self.profile.user.username} - {self.profile.first_name} {self.profile.last_name} ({self.speciality})>"
 
 
 class Assistant(models.Model):
