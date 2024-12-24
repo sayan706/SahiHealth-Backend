@@ -1,30 +1,32 @@
 from utils import exceptions
-from django.shortcuts import render
 from rest_framework.views import APIView
 from utils.response_handler import custom_response_handler
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from app.models import Profile, Doctor, Patient
 from app.serializers.patient import PatientSerializer, CreatePatientSerializer
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 class PatientAPIView(APIView):
+  authentication_classes = [TokenAuthentication]
+  permission_classes = [IsAuthenticated]
+
   def get(self, request, pk=None, format=None):
     data = None
     message = None
+    profile = None
     doctor_id = None
-    creator_profile_id = None
     query_params = request.query_params
-
-    if 'doctor_id' in query_params:
-      doctor_id = query_params['doctor_id']
-    elif 'creator_profile_id' in query_params:
-      creator_profile_id = query_params['creator_profile_id']
 
     if pk is not None:
       try:
         patient = Patient.objects.get(id=pk)
-        serializedPatient = PatientSerializer(instance=patient, exclude=['doctors'])
+        serializedPatient = PatientSerializer(
+          instance=patient,
+          exclude=['doctors']
+        )
         data = serializedPatient.data
         message = "Get Patient"
       except Patient.DoesNotExist:
@@ -32,62 +34,42 @@ class PatientAPIView(APIView):
           detail=f'No patient found with id {pk}',
           code='Patient not found'
         )
+
+    # Retrieve the profile instance
+    profile = Profile.objects.get(user=request.user)
+
+    if 'doctor_id' in query_params:
+      doctor_id = query_params['doctor_id']
+
+    patients = []
+
+    if data is not None:
+      pass
     elif doctor_id is not None:
       try:
         doctor = Doctor.objects.get(id=doctor_id)
         patients = Patient.objects.filter(doctors=doctor)
-        serializedPatients = PatientSerializer(
-          instance=patients,
-          many=True,
-          fields=[
-            'id',
-            'full_name',
-            'phone_number',
-            'gender',
-            'age',
-            'created_at',
-          ]
-        )
-        data = serializedPatients.data
         message = "Get Patients by Doctor"
       except Doctor.DoesNotExist:
         raise exceptions.DoesNotExistException(
           detail=f'No doctor found with id {doctor_id}',
           code='Doctor not found'
         )
-    elif creator_profile_id is not None:
-      try:
-        Profile.objects.get(id=creator_profile_id)
-        patients = Patient.objects.filter(created_by=creator_profile_id)
-        serializedPatients = PatientSerializer(
-          instance=patients,
-          many=True,
-          fields=[
-            'id',
-            'full_name',
-            'phone_number',
-            'gender',
-            'age',
-            'created_at',
-          ]
-        )
-        data = serializedPatients.data
-        message = "Get Patients by Creator"
-      except Profile.DoesNotExist:
-        raise exceptions.DoesNotExistException(
-          detail=f'No profile found with id {creator_profile_id}',
-          code='Profile not found'
-        )
+    elif profile is not None:
+      patients = Patient.objects.filter(created_by=profile)
+      message = "Get Patients by Creator"
+
+    if data is not None:
+      pass
     elif not ('page_size' in query_params and 'page' in query_params):
       raise exceptions.GenericException(
         detail='Provide page_size & page in query params',
-        code='Page Configuration Missing'
+        code='Page configuration missing'
       )
     else:
       current_page = 1
       page_size = int(query_params['page_size'])
 
-      patients = Patient.objects.all()
       total_count = len(patients)
       paginator = Paginator(patients, page_size)
 
@@ -120,7 +102,6 @@ class PatientAPIView(APIView):
         'page_size': page_size,
         'values': serializedPatients.data,
       }
-      message = "Get All Patients"
 
     return custom_response_handler(
       status=status.HTTP_200_OK,
@@ -129,10 +110,13 @@ class PatientAPIView(APIView):
     )
 
   def post(self, request, format=None):
-    query_params = request.query_params
-    request.data['doctor_id'] = query_params['doctor_id']
-    request.data['creator_profile_id'] = query_params['creator_profile_id']
-    serializedCreatePatient = CreatePatientSerializer(data=request.data)
+    request_data = request.data
+
+    # Retrieve the profile instance from the request user
+    profile = Profile.objects.get(user=request.user)
+
+    request_data['creator_profile_id'] = profile.id
+    serializedCreatePatient = CreatePatientSerializer(data=request_data)
 
     if serializedCreatePatient.is_valid():
       patient = serializedCreatePatient.save()
@@ -144,7 +128,7 @@ class PatientAPIView(APIView):
         data=serializedPatient.data
       )
     else:
-      raise exceptions.InvalidSerializerException(
+      raise exceptions.InvalidRequestBodyException(
         detail=serializedCreatePatient.errors,
-        code='Invalid Serializer'
+        code='Invalid request data'
       )

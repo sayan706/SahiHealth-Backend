@@ -32,21 +32,19 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
 
   class Meta:
     model = Profile
-    fields = [
+    fields = '__all__'
+
+
+class UpdateProfileSerializer(DynamicFieldsModelSerializer):
+  class Meta:
+    model = Profile
+    fields = '__all__'
+    read_only_fields = [
       'id',
-      'first_name',
-      'last_name',
-      'email',
-      'phone_number',
-      'gender',
-      'location',
-      'dp_url',
-      # 'profile_picture',
-      'role',
       'user',
-      'is_active',
-      'created_at',
-      'updated_at',
+      'dp_url',
+      'profile_picture',
+      'created_at'
     ]
 
 

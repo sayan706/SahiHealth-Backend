@@ -52,3 +52,16 @@ class UnauthorizedException(APIException):
 
     self.default_code = code
     self.status_code = status_code
+
+
+class PermissionDeniedException(APIException):
+  def __init__(
+      self,
+      detail='You are not allowed to perform this action',
+      code='Permission Denied',
+      status_code=status.HTTP_403_FORBIDDEN
+    ):
+    super().__init__(detail=detail)
+
+    self.default_code = code
+    self.status_code = status_code

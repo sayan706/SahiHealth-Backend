@@ -16,7 +16,11 @@ def create_or_update_profile_from_user(sender, instance, created, **kwargs):
     print(f"CREATED: {instance}, {type(instance)} ({created})")
     pass
   else:
-    profile = Profile.objects.get(user=instance)
+    try:
+      profile = Profile.objects.get(user=instance)
+    except Profile.DoesNotExist:
+      return
+
     print(f"profile: {profile}")
     profile.first_name = instance.first_name
     profile.last_name = instance.last_name

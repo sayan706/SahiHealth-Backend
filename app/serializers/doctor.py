@@ -40,12 +40,14 @@ class DoctorSerializer(DynamicFieldsModelSerializer):
 
   class Meta:
     model = Doctor
-    fields = [
+    fields = '__all__'
+
+
+class UpdateDoctorSerializer(DynamicFieldsModelSerializer):
+  class Meta:
+    model = Doctor
+    fields = '__all__'
+    read_only_fields = [
       'id',
-      'profile',
-      'degree',
-      'speciality',
-      'is_active',
-      'created_at',
-      'updated_at'
+      'created_at'
     ]

@@ -5,9 +5,11 @@ import shutil
 from utils import exceptions
 from dotenv import load_dotenv
 from django.conf import settings
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from utils.response_handler import custom_response_handler
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from app.models import Profile
 from app.serializers.profile import ProfileSerializer, FileUploadSerializer
 
@@ -16,26 +18,10 @@ load_dotenv()
 
 
 @api_view(['POST', 'DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def upload_dp(request):
-  profile = None
-  profile_id = None
-  query_params = request.query_params
-
-  if 'profile_id' in query_params:
-    profile_id = query_params['profile_id'][0]
-  else:
-    raise exceptions.GenericException(
-      detail='Mention profile_id in query params',
-      code='Identifier not found for the profile'
-    )
-
-  try:
-    profile = Profile.objects.get(id=profile_id)
-  except:
-    raise exceptions.DoesNotExistException(
-      detail=f'No profile found with id {profile_id}',
-      code='Doctor not found'
-    )
+  profile = Profile.objects.get(user=request.user)
 
   if request.method == 'POST':
     file = None
@@ -46,7 +32,6 @@ def upload_dp(request):
       'file_ext': request.data.get('file_ext'),
       'file_name': request.data.get('file_name'),
     }
-
     serializedFileUpload = FileUploadSerializer(data=request_data)
 
     if serializedFileUpload.is_valid():
@@ -54,7 +39,10 @@ def upload_dp(request):
       file_ext = serializedFileUpload.validated_data['file_ext']
       file_name = serializedFileUpload.validated_data['file_name']
     else:
-      raise exceptions.InvalidRequestBodyException(detail=serializedFileUpload.errors)
+      raise exceptions.InvalidRequestBodyException(
+        detail=serializedFileUpload.errors,
+        code='Invalid Request Body'
+      )
 
     # Decoding the base64 string received in the file
     try:
@@ -64,7 +52,7 @@ def upload_dp(request):
 
     if not file:
       raise exceptions.GenericException(
-        detail=f'No picture provided for profile of id {profile_id}',
+        detail=f'No profile picture provided',
         code='No file provided'
       )
     else:
@@ -86,9 +74,13 @@ def upload_dp(request):
       uploaded_file_url = f'{BACKEND_URL}{settings.MEDIA_URL}profile_picture/{profile.role.lower()}/{profile.id}/{uploaded_file_name}'
 
       profile_data = {'dp_url': uploaded_file_url}
-      serializedProfile = ProfileSerializer(instance=profile, data=profile_data, partial=True)
+      serializedProfile = ProfileSerializer(
+        instance=profile,
+        data=profile_data,
+        partial=True
+      )
 
-      if serializedProfile.is_valid():
+      if serializedProfile.is_valid(raise_exception=True):
         serializedProfile.save()
 
       return custom_response_handler(
@@ -108,7 +100,11 @@ def upload_dp(request):
       shutil.rmtree(upload_dir)
 
     profile_data = {'dp_url': None}
-    serializedProfile = ProfileSerializer(instance=profile, data=profile_data, partial=True)
+    serializedProfile = ProfileSerializer(
+      instance=profile,
+      data=profile_data,
+      partial=True
+    )
 
     if serializedProfile.is_valid():
       serializedProfile.save()

@@ -38,10 +38,14 @@ class AssistantSerializer(DynamicFieldsModelSerializer):
 
   class Meta:
     model = Assistant
-    fields = [
+    fields = '__all__'
+
+
+class UpdateAssistantSerializer(DynamicFieldsModelSerializer):
+  class Meta:
+    model = Assistant
+    fields = '__all__'
+    read_only_fields = [
       'id',
-      'profile',
-      'is_active',
-      'created_at',
-      'updated_at'
+      'created_at'
     ]

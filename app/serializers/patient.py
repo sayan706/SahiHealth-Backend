@@ -9,26 +9,32 @@ from app.serializers.habit import HabitSerializer
 
 # class PatientSerializer(serializers.ModelSerializer):
 class PatientSerializer(DynamicFieldsModelSerializer):
-  created_by = ProfileSerializer(fields=[
-    'id',
-    'first_name',
-    'last_name',
-    'dp_url',
-    'role',
-  ])
-
   # diseases = serializers.SlugRelatedField(many=True, read_only=True, slug_field='name')
   # habits = serializers.SlugRelatedField(many=True, read_only=True, slug_field='name')
+  created_by = ProfileSerializer(
+    fields=[
+      'first_name',
+      'last_name',
+      'dp_url',
+      'role'
+    ]
+  )
 
-  diseases = DiseaseSerializer(many=True, fields=[
-    'id',
-    'name'
-  ])
+  diseases = DiseaseSerializer(
+    many=True,
+    fields=[
+      'id',
+      'name'
+    ]
+  )
 
-  habits = HabitSerializer(many=True, fields=[
-    'id',
-    'name'
-  ])
+  habits = HabitSerializer(
+    many=True,
+    fields=[
+      'id',
+      'name'
+    ]
+  )
 
   class Meta:
     model = Patient
@@ -61,38 +67,50 @@ class CreatePatientSerializer(serializers.ModelSerializer):
     ]
 
   def validate(self, attrs):
-    try:
-      doctor = Doctor.objects.get(id=attrs['doctor_id'])
-    except Doctor.DoesNotExist:
-      raise exceptions.DoesNotExistException(
-        detail=f'No doctor found with id {attrs["doctor_id"]}',
-        code='Doctor not found'
-      )
+    doctor = None
+    profile = None
+    doctor_id = attrs.get('doctor_id', None)
+    creator_profile_id = attrs.get('creator_profile_id', None)
 
-    try:
-      creator_profile = Profile.objects.get(id=attrs['creator_profile_id'])
-    except Profile.DoesNotExist:
-      raise exceptions.DoesNotExistException(
-        detail=f'No profile found with id {attrs["creator_profile_id"]}',
-        code='Profile not found'
-      )
+    if doctor_id is not None:
+      try:
+        doctor = Doctor.objects.get(id=doctor_id)
+      except Doctor.DoesNotExist:
+        raise exceptions.DoesNotExistException(
+          detail=f'No doctor found with id {doctor_id}',
+          code='Doctor not found'
+        )
+
+    if creator_profile_id is not None:
+      try:
+        profile = Profile.objects.get(id=creator_profile_id)
+      except Profile.DoesNotExist:
+        raise exceptions.DoesNotExistException(
+          detail=f'No profile found with id {creator_profile_id}',
+          code='Profile not found'
+        )
 
     # Attach validated instances to attrs to use in create()
-    attrs['doctor'] = doctor
-    attrs['creator_profile'] = creator_profile
+    if doctor is not None:
+      attrs['doctor'] = doctor
+    if profile is not None:
+      attrs['created_by'] = profile
 
     # Removing after usecase as these fields are not in Patient
-    attrs.pop('doctor_id')
-    attrs.pop('creator_profile_id')
+    if doctor_id is not None:
+      attrs.pop('doctor_id')
+    if creator_profile_id is not None:
+      attrs.pop('creator_profile_id')
 
     return attrs
 
   def create(self, validated_data):
     doctor = validated_data.pop('doctor')
-    creator_profile = validated_data.pop('creator_profile')
+    # created_by = validated_data.pop('created_by')
 
     # Create patient instance
-    patient = Patient.objects.create(created_by=creator_profile, **validated_data)
+    patient = Patient.objects.create(**validated_data)
+    # patient = Patient.objects.create(created_by=created_by, **validated_data)
 
     # Associate the doctor with the patient
     patient.doctors.add(doctor)

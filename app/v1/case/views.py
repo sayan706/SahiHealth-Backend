@@ -2,12 +2,17 @@ from utils import exceptions
 from rest_framework.views import APIView
 from utils.response_handler import custom_response_handler
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from app.models import Case, Patient
 from app.serializers.case import CaseSerializer
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 class CaseAPIView(APIView):
+  authentication_classes = [TokenAuthentication]
+  permission_classes = [IsAuthenticated]
+
   def get(self, request, pk=None, format=None):
     data = None
     message = None
