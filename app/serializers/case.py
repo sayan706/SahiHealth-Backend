@@ -10,16 +10,18 @@ from app.serializers.case_chief_complaint import CaseChiefComplaintSerializer
 
 # class CaseSerializer(serializers.ModelSerializer):
 class CaseSerializer(DynamicFieldsModelSerializer):
-  patient = PatientSerializer(exclude=[
-    'id',
-    'created_by',
-    'doctors',
-    'phone_number',
-    'address',
-    'is_active',
-    'created_at',
-    'updated_at'
-  ])
+  patient = PatientSerializer(
+    exclude=[
+      'id',
+      'created_by',
+      'doctors',
+      'phone_number',
+      'address',
+      'is_active',
+      'created_at',
+      'updated_at'
+    ]
+  )
 
   assigned_doctor = DoctorSerializer(
     fields=[
@@ -56,3 +58,29 @@ class CaseSerializer(DynamicFieldsModelSerializer):
       'created_at',
       'updated_at'
     ]
+
+
+class AppointmentSerializer(DynamicFieldsModelSerializer):
+  patient = PatientSerializer(
+    fields=[
+      'full_name',
+      'gender',
+      'age',
+      'phone_number'
+    ]
+  )
+
+  assigned_doctor = DoctorSerializer(
+    fields=[
+      'degree',
+      'profile'
+    ],
+    profile_fields=[
+      'first_name',
+      'last_name'
+    ]
+  )
+
+  class Meta:
+    model = Case
+    fields = '__all__'

@@ -90,6 +90,10 @@ class DoctorAPIView(APIView):
         exclude=['created_at'],
         profile_exclude=[
           'id',
+          'email',
+          'phone_number',
+          'profile_picture',
+          'role',
           'is_active',
           'created_at',
           'updated_at'

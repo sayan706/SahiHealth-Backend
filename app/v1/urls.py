@@ -9,6 +9,7 @@ from app.v1.patient.views import PatientAPIView
 from app.v1.auth.views import LoginAPIView, LogoutAPIView
 from app.v1.patient.views import PatientAPIView
 from app.v1.case.views import CaseAPIView
+from app.v1.appointment.views import AppointmentAPIView
 
 
 urlpatterns=[
@@ -27,5 +28,6 @@ urlpatterns=[
   path('habit/<int:pk>', HabitAPIView.as_view()),
   path('case', CaseAPIView.as_view()),
   path('case/<int:pk>', CaseAPIView.as_view()),
+  path('appointment', AppointmentAPIView.as_view()),
   path('speciality', SpecialityAPIView.as_view()),
 ]

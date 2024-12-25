@@ -11,6 +11,7 @@ from app.serializers.habit import HabitSerializer
 class PatientSerializer(DynamicFieldsModelSerializer):
   # diseases = serializers.SlugRelatedField(many=True, read_only=True, slug_field='name')
   # habits = serializers.SlugRelatedField(many=True, read_only=True, slug_field='name')
+
   created_by = ProfileSerializer(
     fields=[
       'first_name',
@@ -42,12 +43,15 @@ class PatientSerializer(DynamicFieldsModelSerializer):
 
 
 class CreatePatientSerializer(serializers.ModelSerializer):
+  diseases = serializers.ListField(write_only=True)
   doctor_id = serializers.IntegerField(write_only=True)
   creator_profile_id = serializers.IntegerField(write_only=True)
 
   class Meta:
     model = Patient
     fields = [
+      'diseases',
+      'habits',
       'doctor_id',
       'creator_profile_id',
       'full_name',
@@ -106,6 +110,8 @@ class CreatePatientSerializer(serializers.ModelSerializer):
 
   def create(self, validated_data):
     doctor = validated_data.pop('doctor')
+    diseases = validated_data.pop('diseases')
+    habits = validated_data.pop('habits')
     # created_by = validated_data.pop('created_by')
 
     # Create patient instance
@@ -114,5 +120,13 @@ class CreatePatientSerializer(serializers.ModelSerializer):
 
     # Associate the doctor with the patient
     patient.doctors.add(doctor)
+
+    # Associate diseases with the patient
+    for disease in diseases:
+      patient.diseases.add(disease)
+
+    # Associate habits with the patient
+    for habit in habits:
+      patient.habits.add(habit)
 
     return patient
