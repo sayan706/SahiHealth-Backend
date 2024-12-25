@@ -52,7 +52,7 @@ class CaseSerializer(DynamicFieldsModelSerializer):
       'treatment_type',
       'documents',
       'note',
-      'is_follow_up',
+      'follow_up_id',
       'follow_up_date',
       'is_active',
       'created_at',

@@ -24,6 +24,7 @@ def create_or_update_profile_from_user(sender, instance, created, **kwargs):
     print(f"profile: {profile}")
     profile.first_name = instance.first_name
     profile.last_name = instance.last_name
+    profile.full_name = f'{instance.first_name} {instance.last_name}'
     profile.email = instance.email
     profile.save()
     print(f"UPDATED: {instance}, {type(instance)} ({created})")
@@ -37,7 +38,6 @@ def create_or_update_doctor_or_assistant(sender, instance, created, **kwargs):
     doctor, doctor_created = Doctor.objects.get_or_create(profile=instance)
 
     if not doctor_created:
-      doctor.updated_at = datetime.now()
       doctor.save()
       print(f"DOCTOR UPDATED: {instance}, {type(instance)} ({created})")
     else:
