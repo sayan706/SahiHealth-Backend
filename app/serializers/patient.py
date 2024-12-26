@@ -43,15 +43,15 @@ class PatientSerializer(DynamicFieldsModelSerializer):
 
 
 class CreatePatientSerializer(serializers.ModelSerializer):
-  diseases = serializers.ListField(write_only=True)
   doctor_id = serializers.IntegerField(write_only=True)
   creator_profile_id = serializers.IntegerField(write_only=True)
+
+  diseases = serializers.ListField(write_only=True)
+  habits = serializers.ListField(write_only=True)
 
   class Meta:
     model = Patient
     fields = [
-      'diseases',
-      'habits',
       'doctor_id',
       'creator_profile_id',
       'full_name',
@@ -66,7 +66,9 @@ class CreatePatientSerializer(serializers.ModelSerializer):
       'body_temperature',
       'weight',
       'note_on_vitals',
+      'diseases',
       'other_diseases',
+      'habits',
       'other_habits'
     ]
 
@@ -94,13 +96,13 @@ class CreatePatientSerializer(serializers.ModelSerializer):
           code='Profile not found'
         )
 
-    # Attach validated instances to attrs to use in create()
+    # Attach validated instances to attrs for later use in create() or update()
     if doctor is not None:
       attrs['doctor'] = doctor
     if profile is not None:
       attrs['created_by'] = profile
 
-    # Removing after usecase as these fields are not in Patient
+    # Remove after usecase as these fields are not in Patient
     if doctor_id is not None:
       attrs.pop('doctor_id')
     if creator_profile_id is not None:
