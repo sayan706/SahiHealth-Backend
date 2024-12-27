@@ -15,15 +15,49 @@ class DoctorAPIView(APIView):
   authentication_classes = [TokenAuthentication]
   permission_classes = [IsAuthenticated]
 
-  def get(self, request, format=None):
+  def get(self, request, pk=None, format=None):
     data = None
     message = None
     query_params = request.query_params
 
-    # Retrieve the profile instance
-    profile = Profile.objects.get(user=request.user)
+    if pk is not None:
+      try:
+        doctor = Doctor.objects.get(id=pk)
+        serializedDoctor = DoctorSerializer(
+          instance=doctor,
+          exclude=[
+            'profile_picture',
+            'is_active',
+            'created_at',
+            'updated_at'
+          ],
+          profile_exclude=[
+            'id',
+            'profile_picture',
+            'is_active',
+            'created_at',
+            'updated_at'
+          ],
+          user_fields=[
+            'username',
+            'date_joined'
+          ]
+        )
+        data = serializedDoctor.data
+        message = "Get Doctor"
+      except Doctor.DoesNotExist:
+        raise exceptions.DoesNotExistException(
+          detail=f'No doctor found with id {pk}',
+          code='Doctor not found'
+        )
 
-    if ('page_size' in query_params or 'page' in query_params):
+    if data is None:
+      # Retrieve the profile instance
+      profile = Profile.objects.get(user=request.user)
+
+    if data is not None:
+      pass
+    elif ('page_size' in query_params or 'page' in query_params):
       pass
     else:
       try:
@@ -36,6 +70,7 @@ class DoctorAPIView(APIView):
           ],
           profile_exclude=[
             'id',
+            'profile_picture',
             'is_active',
             'created_at',
             'updated_at'
