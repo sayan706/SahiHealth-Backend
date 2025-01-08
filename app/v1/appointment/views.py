@@ -1,5 +1,6 @@
 from utils import exceptions
 from collections import defaultdict
+from datetime import datetime, timedelta
 from rest_framework.views import APIView
 from utils.response_handler import custom_response_handler
 from rest_framework import status
@@ -21,7 +22,21 @@ def get_cases_grouped_by_date(doctor):
   )
 
   for case in cases:
-    date_in_str = case.date.strftime('%Y-%m-%d')  # Convert date to string
+    # Get today's and yesterday's dates
+    today = datetime.now().date()
+    yesterday = today - timedelta(days=1)
+
+    # Convert date of the case to string
+    date_in_str = case.date.strftime('%Y-%m-%d')
+
+    # Convert the string back to a datetime object (but I have case.date which is a datetime object)
+    # date_obj = datetime.strptime(date_in_str, '%Y-%m-%d').date()
+
+    if case.date == today:
+      date_in_str = "Today"
+    elif case.date == yesterday:
+      date_in_str = "Yesterday"
+
     grouped_cases[date_in_str].append(case)
 
   # Flatten grouped cases into a list for pagination
