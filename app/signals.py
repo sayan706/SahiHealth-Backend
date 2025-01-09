@@ -54,5 +54,5 @@ def create_or_update_doctor_or_assistant(sender, instance, created, **kwargs):
       print(f"ASSISTANT UPDATED: {instance}, {type(instance)} ({created})")
     else:
       print(f"ASSISTANT CREATED: {instance}, {type(instance)} ({created})")
-    
+
     pass

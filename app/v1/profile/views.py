@@ -56,8 +56,8 @@ def upload_dp(request):
         code='No file provided'
       )
     else:
-      base_dir = os.path.join(settings.MEDIA_ROOT, 'profile_picture', profile.role.lower())
-      upload_dir = os.path.join(base_dir, str(profile.id))
+      base_dir = os.path.join(settings.MEDIA_ROOT, 'profile_picture')
+      upload_dir = os.path.join(base_dir, profile.role.lower(), str(profile.id))
 
       # Removing the existing folder and recreating it (if exists)
       if os.path.exists(upload_dir):
@@ -92,8 +92,8 @@ def upload_dp(request):
         }
       )
   elif request.method == 'DELETE':
-    base_dir = os.path.join(settings.MEDIA_ROOT, 'profile_picture', profile.role.lower())
-    upload_dir = os.path.join(base_dir, str(profile.id))
+    base_dir = os.path.join(settings.MEDIA_ROOT, 'profile_picture')
+    upload_dir = os.path.join(base_dir, profile.role.lower(), str(profile.id))
 
     # Removing the existing folder (if exists)
     if os.path.exists(upload_dir):
