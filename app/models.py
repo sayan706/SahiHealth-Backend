@@ -247,6 +247,7 @@ class CaseDocument(models.Model):
   case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name="documents")
   file_name = models.CharField(max_length=255, blank=True, null=True)
   file_extension = models.CharField(max_length=10, blank=True, null=True)
+  uploaded_file_name = models.CharField(max_length=512, blank=True, null=True)
   file_url = models.URLField(blank=True, null=True)
   document_section = models.CharField(max_length=60, choices=DOCUMENT_SECTION_CHOICES, blank=True, null=True)
   is_active = models.BooleanField(default=True)

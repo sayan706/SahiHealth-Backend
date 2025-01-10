@@ -182,3 +182,15 @@ class CreateCaseSerializer(DynamicFieldsModelSerializer):
     case.patient.doctors.add(case.assigned_doctor)
 
     return case
+
+
+class DocumentsUploadSerializer(serializers.Serializer):
+  DOCUMENT_SECTION_CHOICES = [
+    "MEDICINE_PHOTO",
+    "LAB_REPORT",
+    "PHOTO"
+  ]
+
+  case_id = serializers.IntegerField()
+  document_section = serializers.ChoiceField(choices=DOCUMENT_SECTION_CHOICES)
+  files = serializers.ListField(child=serializers.FileField(), allow_empty=False)

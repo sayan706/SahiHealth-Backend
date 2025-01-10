@@ -84,7 +84,7 @@ def upload_dp(request):
         serializedProfile.save()
 
       return custom_response_handler(
-        status=status.HTTP_200_OK,
+        status=status.HTTP_201_CREATED,
         message="Profile picture uploaded successfully",
         data={
           'file_name': uploaded_file_name,
