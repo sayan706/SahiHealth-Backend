@@ -1,22 +1,12 @@
-import os
-import time
-
 from utils import exceptions
-from dotenv import load_dotenv
-from django.conf import settings
 from rest_framework.views import APIView
 from utils.response_handler import custom_response_handler
-from rest_framework.parsers import MultiPartParser
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from app.models import Patient, Case, CaseDocument
-from app.serializers.case import CaseSerializer, CreateCaseSerializer, DocumentsUploadSerializer
-from app.serializers.case_document import CaseDocumentSerializer
-
-
-load_dotenv()
+from app.models import Patient, Case
+from app.serializers.case import CaseSerializer, CreateCaseSerializer, UpdateCaseSerializer
 
 
 class CaseAPIView(APIView):
@@ -34,7 +24,10 @@ class CaseAPIView(APIView):
         case = Case.objects.get(id=pk)
         serializedCase = CaseSerializer(
           instance=case,
-          exclude=['is_active', 'updated_at']
+          exclude=[
+            'is_active',
+            'updated_at'
+          ]
         )
         data = serializedCase.data
         message = 'Get Case'
@@ -107,7 +100,7 @@ class CaseAPIView(APIView):
 
     if serializedCreateCase.is_valid():
       case = serializedCreateCase.save()
-      serializedPatient = CaseSerializer(
+      serializedCase = CaseSerializer(
         instance=case,
         exclude=[
           'is_active',
@@ -116,9 +109,9 @@ class CaseAPIView(APIView):
       )
 
       return custom_response_handler(
-        status=status.HTTP_200_OK,
+        status=status.HTTP_201_CREATED,
         message='Case created successfully',
-        data=serializedPatient.data
+        data=serializedCase.data
       )
     else:
       raise exceptions.InvalidRequestBodyException(
@@ -126,71 +119,39 @@ class CaseAPIView(APIView):
         code='Invalid request data'
       )
 
-
-class DocumentsUploadAPIView(APIView):
-  parser_classes = [MultiPartParser]
-
-  def post(self, request, format=None):
-    case = None
-    caseDocuments = []
-    base_dir = os.path.join(settings.MEDIA_ROOT, 'case')
-    BACKEND_URL = os.getenv('BACKEND_URL', default='http://localhost:8000')
-    serializedDocumentsUpload = DocumentsUploadSerializer(data=request.data)
-
-    if serializedDocumentsUpload.is_valid():
-      case_id = serializedDocumentsUpload.validated_data['case_id']
-      document_section = serializedDocumentsUpload.validated_data['document_section']
-      files = serializedDocumentsUpload.validated_data['files']
-
+  def patch(self, request, pk, format=None):
+    if pk is not None:
       try:
-        case = Case.objects.get(id=case_id)
+        case = Case.objects.get(id=pk)
       except Case.DoesNotExist:
         raise exceptions.DoesNotExistException(
-          detail=f'No case found with id {case_id}',
+          detail=f'No case found with id {pk}',
           code='Case not found'
         )
 
-      for file in files:
-        # Save file to the media folder
-        timestamp = int(time.time() * 1000)
-        file_name = file.name.rsplit('.', 1)[0]
-        file_extension = file.name.rsplit('.', 1)[1]
-        uploaded_file_name = f'{file_name}-{timestamp}.{file_extension}'
-        upload_dir = os.path.join(base_dir, str(case_id), str(document_section).lower())
+    serializedUpdateCase = UpdateCaseSerializer(
+      instance=case,
+      data=request.data,
+      partial=True
+    )
 
-        os.makedirs(upload_dir, exist_ok=True)
-        final_file_path = os.path.join(upload_dir, uploaded_file_name)
-
-        with open(final_file_path, 'wb') as destination:
-          for chunk in file.chunks():
-            destination.write(chunk)
-
-        uploaded_file_url = f'{BACKEND_URL}{settings.MEDIA_URL}case/{case_id}/{document_section}/{uploaded_file_name}'
-
-        caseDocument = CaseDocument.objects.create(
-          case=case,
-          file_name=file_name,
-          file_extension=file_extension,
-          uploaded_file_name=uploaded_file_name,
-          file_url=uploaded_file_url,
-          document_section=document_section,
-        )
-
-        # Accumulate all uploaded files in a list
-        caseDocuments.append(caseDocument)
-
-      serializedCaseDocuments = CaseDocumentSerializer(
-        instance=caseDocuments,
-        many=True
+    if serializedUpdateCase.is_valid():
+      updatedCase = serializedUpdateCase.save()
+      serializedCase = CaseSerializer(
+        instance=updatedCase,
+        exclude=[
+          'is_active',
+          'updated_at'
+        ]
       )
 
       return custom_response_handler(
-        status=status.HTTP_201_CREATED,
-        message='Documents uploaded successfully',
-        data=serializedCaseDocuments.data,
+        status=status.HTTP_200_OK,
+        message='Case updated successfully',
+        data=serializedCase.data
       )
     else:
       raise exceptions.InvalidRequestBodyException(
-        detail=serializedDocumentsUpload.errors,
-        code='Invalid Request Body'
+        detail=serializedUpdateCase.errors,
+        code='Invalid request data'
       )

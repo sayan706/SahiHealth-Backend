@@ -91,21 +91,21 @@ class CreateCaseSerializer(DynamicFieldsModelSerializer):
   doctor_id = serializers.IntegerField(write_only=True)
   patient_id = serializers.IntegerField(write_only=True)
 
-  chief_complaints = serializers.ListField(write_only=True)
-  documents = serializers.ListField(write_only=True)
-  findings = serializers.ListField(write_only=True)
+  # chief_complaints = serializers.ListField(write_only=True)
+  # documents = serializers.ListField(write_only=True)
+  # findings = serializers.ListField(write_only=True)
 
   class Meta:
     model = Case
     fields = [
       'patient_id',
       'doctor_id',
-      'chief_complaints',
+      # 'chief_complaints',
       'past_treatment',
       'treatment_location',
       'treatment_type',
-      'documents',
-      'findings',
+      # 'documents',
+      # 'findings',
       'note',
       'follow_up_id',
       'follow_up_date'
@@ -150,47 +150,48 @@ class CreateCaseSerializer(DynamicFieldsModelSerializer):
     return attrs
 
   def create(self, validated_data):
-    chief_complaints = validated_data.pop('chief_complaints', [])
-    documents = validated_data.pop('documents', [])
-    findings = validated_data.pop('findings', [])
+    # chief_complaints = validated_data.pop('chief_complaints', [])
+    # documents = validated_data.pop('documents', [])
+    # findings = validated_data.pop('findings', [])
 
     # Create case instance
     case = Case.objects.create(**validated_data)
 
-    # Create chief complaints, documents and findings
-    for chief_complaint in chief_complaints:
-      CaseChiefComplaint.objects.create(
-        case=case,
-        title=chief_complaint.get('title', None),
-        severity=chief_complaint.get('severity', None),
-        duration=chief_complaint.get('duration', None),
-        duration_unit=chief_complaint.get('duration_unit', None)
-      )
+    # # Create chief complaints, documents and findings
+    # for chief_complaint in chief_complaints:
+    #   CaseChiefComplaint.objects.create(
+    #     case=case,
+    #     title=chief_complaint.get('title', None),
+    #     severity=chief_complaint.get('severity', None),
+    #     duration=chief_complaint.get('duration', None),
+    #     duration_unit=chief_complaint.get('duration_unit', None)
+    #   )
 
-    for document in documents:
-      CaseDocument.objects.create(
-        case=case,
-        file_name=document.get('file_name', None),
-        file_extension=document.get('file_extension', None),
-        file_url=document.get('file_url', None),
-        document_section=document.get('document_section', None)
-      )
+    # for document in documents:
+    #   CaseDocument.objects.create(
+    #     case=case,
+    #     file_name=document.get('file_name', None),
+    #     file_extension=document.get('file_extension', None),
+    #     file_url=document.get('file_url', None),
+    #     document_section=document.get('document_section', None)
+    #   )
 
-    for finding in findings:
-      CaseFinding.objects.create(case=case, title=finding)
+    # for finding in findings:
+    #   CaseFinding.objects.create(case=case, title=finding)
 
     case.patient.doctors.add(case.assigned_doctor)
 
     return case
 
 
-class DocumentsUploadSerializer(serializers.Serializer):
-  DOCUMENT_SECTION_CHOICES = [
-    "MEDICINE_PHOTO",
-    "LAB_REPORT",
-    "PHOTO"
-  ]
-
-  case_id = serializers.IntegerField()
-  document_section = serializers.ChoiceField(choices=DOCUMENT_SECTION_CHOICES)
-  files = serializers.ListField(child=serializers.FileField(), allow_empty=False)
+class UpdateCaseSerializer(DynamicFieldsModelSerializer):
+  class Meta:
+    model = Case
+    fields = [
+      'chief_complaints',
+      'past_treatment',
+      'treatment_location',
+      'treatment_type',
+      'findings',
+      'note'
+    ]

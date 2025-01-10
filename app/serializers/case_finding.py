@@ -8,4 +8,9 @@ class CaseFindingSerializer(DynamicFieldsModelSerializer):
   class Meta:
     model = CaseFinding
     # fields = '__all__'
-    exclude = ['case', 'is_active', 'created_at', 'updated_at']
+    exclude = [
+      'case',
+      'is_active',
+      'created_at',
+      'updated_at'
+    ]
