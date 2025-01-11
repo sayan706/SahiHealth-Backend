@@ -4,9 +4,11 @@ from app.dynamic_serializer import DynamicFieldsModelSerializer
 from app.models import Doctor, Patient, Case, CaseChiefComplaint, CaseDocument, CaseFinding
 from app.serializers.doctor import DoctorSerializer
 from app.serializers.patient import PatientSerializer
-from app.serializers.case_finding import CaseFindingSerializer
 from app.serializers.case_document import CaseDocumentSerializer
-from app.serializers.case_chief_complaint import CaseChiefComplaintSerializer
+from app.serializers.case_finding import CaseFindingSerializer, UpdateCaseFindingSerializer
+from app.serializers.case_chief_complaint import (
+  CaseChiefComplaintSerializer, UpdateCaseChiefComplaintSerializer
+)
 
 
 # class CaseSerializer(serializers.ModelSerializer):
@@ -48,6 +50,14 @@ class CaseSerializer(DynamicFieldsModelSerializer):
       'assigned_doctor',
       'chief_complaints',
       'findings',
+      'blood_pressure_low',
+      'blood_pressure_high',
+      'blood_sugar_level',
+      'pulse',
+      'oxygen',
+      'body_temperature',
+      'weight',
+      'note_on_vitals',
       'past_treatment',
       'treatment_location',
       'treatment_type',
@@ -101,6 +111,14 @@ class CreateCaseSerializer(DynamicFieldsModelSerializer):
       'patient_id',
       'doctor_id',
       # 'chief_complaints',
+      'blood_pressure_low',
+      'blood_pressure_high',
+      'blood_sugar_level',
+      'pulse',
+      'oxygen',
+      'body_temperature',
+      'weight',
+      'note_on_vitals',
       'past_treatment',
       'treatment_location',
       'treatment_type',
@@ -185,13 +203,70 @@ class CreateCaseSerializer(DynamicFieldsModelSerializer):
 
 
 class UpdateCaseSerializer(DynamicFieldsModelSerializer):
+  chief_complaints = UpdateCaseChiefComplaintSerializer(many=True)
+  findings = UpdateCaseFindingSerializer(many=True)
+
   class Meta:
     model = Case
     fields = [
       'chief_complaints',
+      'blood_pressure_low',
+      'blood_pressure_high',
+      'blood_sugar_level',
+      'pulse',
+      'oxygen',
+      'body_temperature',
+      'weight',
+      'note_on_vitals',
       'past_treatment',
       'treatment_location',
       'treatment_type',
       'findings',
       'note'
     ]
+
+  def update(self, instance, validated_data):
+    chief_complaints = validated_data.pop('chief_complaints', [])
+    findings = validated_data.pop('findings', [])
+
+    for attr, value in validated_data.items():
+      setattr(instance, attr, value)
+
+    # Save the attributes owned by the instance
+    instance.save()
+
+    # instance.chief_complaints.clear()
+    # for chief_complaint in chief_complaints:
+    #   CaseChiefComplaint.objects.create(case=instance, **chief_complaint)
+
+    # instance.findings.clear()
+    # for finding in findings:
+    #   CaseFinding.objects.create(case=instance, **finding)
+
+    for chief_complaint in chief_complaints:
+      chief_complaint_id = chief_complaint.get('id', None)
+
+      if chief_complaint_id is not None:
+        chief_complaint_instance = CaseChiefComplaint.objects.get(id=chief_complaint_id)
+
+        for attr, value in chief_complaint.items():
+          setattr(chief_complaint_instance, attr, value)
+
+        chief_complaint_instance.save()
+      else:
+        CaseChiefComplaint.objects.create(case=instance, **chief_complaint)
+
+    for finding in findings:
+      finding_id = finding.get('id', None)
+
+      if finding_id is not None:
+        finding_instance = CaseFinding.objects.get(id=finding_id)
+
+        for attr, value in finding.items():
+          setattr(finding_instance, attr, value)
+
+        finding_instance.save()
+      else:
+        CaseFinding.objects.create(case=instance, **finding)
+
+    return instance
