@@ -4,6 +4,7 @@ from utils.response_handler import custom_response_handler
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.filters import SearchFilter
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from app.models import Profile, Speciality, Doctor
 from app.serializers.profile import UpdateProfileSerializer
@@ -14,6 +15,15 @@ from app.serializers.doctor import DoctorSerializer, UpdateDoctorSerializer
 class DoctorAPIView(APIView):
   authentication_classes = [TokenAuthentication]
   permission_classes = [IsAuthenticated]
+
+  # Define search fields at the class level
+  search_fields = [
+    'profile__full_name',
+    'profile__email',
+    'profile__phone_number',
+    'profile__gender',
+    'profile__location',
+  ]
 
   def get(self, request, pk=None, format=None):
     data = None
@@ -108,6 +118,12 @@ class DoctorAPIView(APIView):
         doctors = Doctor.objects.all()
         message = "Get All Doctors"
 
+      # Apply search filter
+      search_filter = SearchFilter()
+
+      if 'search' in request.query_params:
+        doctors = search_filter.filter_queryset(request, doctors, self)
+
       total_count = len(doctors)
       paginator = Paginator(doctors, page_size)
 
@@ -125,8 +141,8 @@ class DoctorAPIView(APIView):
         exclude=['created_at'],
         profile_exclude=[
           'id',
-          'email',
-          'phone_number',
+          # 'email',
+          # 'phone_number',
           'profile_picture',
           'role',
           'is_active',

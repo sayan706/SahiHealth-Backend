@@ -4,6 +4,7 @@ from utils.response_handler import custom_response_handler
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.filters import SearchFilter
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from app.models import Profile, Doctor, Patient
 from app.serializers.patient import PatientSerializer, CreatePatientSerializer
@@ -12,6 +13,18 @@ from app.serializers.patient import PatientSerializer, CreatePatientSerializer
 class PatientAPIView(APIView):
   authentication_classes = [TokenAuthentication]
   permission_classes = [IsAuthenticated]
+
+  # Define search fields at the class level
+  search_fields = [
+    'full_name',
+    'phone_number',
+    'gender',
+    'age',
+    'address',
+    'allergy',
+    'other_diseases',
+    'other_habits'
+  ]
 
   def get(self, request, pk=None, format=None):
     data = None
@@ -78,6 +91,12 @@ class PatientAPIView(APIView):
         code='Page configuration missing'
       )
     else:
+      # Apply search filter
+      search_filter = SearchFilter()
+
+      if 'search' in request.query_params:
+        patients = search_filter.filter_queryset(request, patients, self)
+
       current_page = 1
       page_size = int(query_params['page_size'])
 

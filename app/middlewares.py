@@ -8,9 +8,13 @@ from django.utils.deprecation import MiddlewareMixin
 class FormatDateTimeMiddleware(MiddlewareMixin):
   def process_response(self, request, response):
     if isinstance(response, Response):
-      data = json.loads(response.content)
-      formatted_data = self.format_dates(data)
-      response.content = json.dumps(formatted_data)
+      try:
+        data = json.loads(response.content)
+        formatted_data = self.format_dates(data)
+        response.content = json.dumps(formatted_data)
+      except json.JSONDecodeError:
+        # Return the original response if the JSON decoding fails
+        return response
 
     return response
 
