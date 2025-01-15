@@ -161,6 +161,12 @@ class Case(models.Model):
     ('NO', 'No'),
   ]
 
+  COMPLAINT_SEVERITY_CHOICES = [
+    ('MILD', 'Mild'),
+    ('MODERATE', 'Moderate'),
+    ('SEVERE', 'Severe'),
+  ]
+
   TREATMENT_LOCATION_CHOICES = [
     ('VILLAGE_RMP', 'Village RMP'),
     ('TOWN_RMP', 'Town RMP'),
@@ -183,12 +189,14 @@ class Case(models.Model):
   body_temperature = models.FloatField(null=True, blank=True)
   weight = models.FloatField(null=True, blank=True)
   note_on_vitals = models.TextField(blank=True, null=True)
+  complaint_severity = models.CharField(max_length=20, choices=COMPLAINT_SEVERITY_CHOICES, blank=True, null=True)
   past_treatment = models.CharField(max_length=3, choices=PAST_TREATMENT_CHOICES, blank=True, null=True)
   treatment_location = models.CharField(max_length=50, choices=TREATMENT_LOCATION_CHOICES, blank=True, null=True)
   treatment_type = models.CharField(max_length=50, choices=TREATMENT_TYPE_CHOICES, blank=True, null=True)
   note = models.TextField(blank=True, null=True)
   follow_up_id = models.PositiveBigIntegerField(blank=True, null=True)
   follow_up_date = models.DateTimeField(blank=True, null=True)
+  is_completed = models.BooleanField(default=False)
   is_active = models.BooleanField(default=True)
   # created_at = models.DateTimeField(default=datetime.now)
   created_at = models.DateTimeField(auto_now_add=True)
@@ -202,20 +210,20 @@ class Case(models.Model):
 
 
 class CaseChiefComplaint(models.Model):
-  SEVERITY_CHOICES = [
-    ('MILD', 'Mild'),
-    ('MODERATE', 'Moderate'),
-    ('SEVERE', 'Severe'),
-  ]
-
   DURATION_UNIT_CHOICES = [
     ('DAY', 'Day'),
-    ('WEEK', 'Week'),
+    # ('WEEK', 'Week'),
   ]
+
+  # SEVERITY_CHOICES = [
+  #   ('MILD', 'Mild'),
+  #   ('MODERATE', 'Moderate'),
+  #   ('SEVERE', 'Severe'),
+  # ]
 
   case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name="chief_complaints")
   title = models.CharField(max_length=255, blank=True, null=True)
-  severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, blank=True, null=True)
+  # severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, blank=True, null=True)
   duration = models.PositiveIntegerField(blank=True, null=True)
   duration_unit = models.CharField(max_length=5, choices=DURATION_UNIT_CHOICES, blank=True, null=True)
   is_active = models.BooleanField(default=True)
