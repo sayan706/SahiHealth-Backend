@@ -74,6 +74,7 @@ class CaseAPIView(APIView):
           'findings',
           'is_follow_up',
           'follow_up_date',
+          'is_completed',
           'is_active',
           'created_at'
         ]

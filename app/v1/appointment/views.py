@@ -29,9 +29,10 @@ def get_cases_grouped_by_date(doctor):
     # Convert date of the case to string
     date_in_str = case.date.strftime('%Y-%m-%d')
 
-    # Convert the string back to a datetime object (but I have case.date which is a datetime object)
+    # Convert the string back to a datetime object
     # date_obj = datetime.strptime(date_in_str, '%Y-%m-%d').date()
 
+    # I already have case.date which is a datetime object
     if case.date == today:
       date_in_str = "Today"
     elif case.date == yesterday:
@@ -50,6 +51,7 @@ def get_cases_grouped_by_date(doctor):
         'id',
         'patient',
         'assigned_doctor',
+        'is_completed'
       ]
     )
     flattened_cases.append({"date": date, "appointments": serializedAppointments.data})

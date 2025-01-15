@@ -21,7 +21,7 @@ class CreateCaseChiefComplaintSerializer(DynamicFieldsModelSerializer):
     model = CaseChiefComplaint
     fields = [
       'title',
-      'severity',
+      # 'severity',
       'duration',
       'duration_unit'
     ]
@@ -36,7 +36,7 @@ class UpdateCaseChiefComplaintSerializer(DynamicFieldsModelSerializer):
     fields = [
       'id',
       'title',
-      'severity',
+      # 'severity',
       'duration',
       'duration_unit'
     ]

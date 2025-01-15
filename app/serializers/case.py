@@ -11,6 +11,32 @@ from app.serializers.case_chief_complaint import (
 )
 
 
+class AppointmentSerializer(DynamicFieldsModelSerializer):
+  patient = PatientSerializer(
+    fields=[
+      'full_name',
+      'gender',
+      'age',
+      'phone_number'
+    ]
+  )
+
+  assigned_doctor = DoctorSerializer(
+    fields=[
+      'degree',
+      'profile'
+    ],
+    profile_fields=[
+      'first_name',
+      'last_name'
+    ]
+  )
+
+  class Meta:
+    model = Case
+    fields = '__all__'
+
+
 # class CaseSerializer(serializers.ModelSerializer):
 class CaseSerializer(DynamicFieldsModelSerializer):
   patient = PatientSerializer(
@@ -58,6 +84,7 @@ class CaseSerializer(DynamicFieldsModelSerializer):
       'body_temperature',
       'weight',
       'note_on_vitals',
+      'complaint_severity',
       'past_treatment',
       'treatment_location',
       'treatment_type',
@@ -65,36 +92,11 @@ class CaseSerializer(DynamicFieldsModelSerializer):
       'note',
       'follow_up_id',
       'follow_up_date',
+      'is_completed',
       'is_active',
       'created_at',
       'updated_at'
     ]
-
-
-class AppointmentSerializer(DynamicFieldsModelSerializer):
-  patient = PatientSerializer(
-    fields=[
-      'full_name',
-      'gender',
-      'age',
-      'phone_number'
-    ]
-  )
-
-  assigned_doctor = DoctorSerializer(
-    fields=[
-      'degree',
-      'profile'
-    ],
-    profile_fields=[
-      'first_name',
-      'last_name'
-    ]
-  )
-
-  class Meta:
-    model = Case
-    fields = '__all__'
 
 
 class CreateCaseSerializer(DynamicFieldsModelSerializer):
@@ -119,6 +121,7 @@ class CreateCaseSerializer(DynamicFieldsModelSerializer):
       'body_temperature',
       'weight',
       'note_on_vitals',
+      'complaint_severity',
       'past_treatment',
       'treatment_location',
       'treatment_type',
@@ -218,6 +221,7 @@ class UpdateCaseSerializer(DynamicFieldsModelSerializer):
       'body_temperature',
       'weight',
       'note_on_vitals',
+      'complaint_severity',
       'past_treatment',
       'treatment_location',
       'treatment_type',
@@ -232,7 +236,6 @@ class UpdateCaseSerializer(DynamicFieldsModelSerializer):
     for attr, value in validated_data.items():
       setattr(instance, attr, value)
 
-    # Save the attributes owned by the instance
     instance.save()
 
     # instance.chief_complaints.clear()
