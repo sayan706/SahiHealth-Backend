@@ -152,7 +152,7 @@ class Patient(models.Model):
   admin_objects = AdminManager()
 
   def __str__(self):
-    return f"Patient<{self.full_name} ({self.phone_number})>"
+    return f"Patient<({self.id}) {self.full_name} ({self.phone_number})>"
 
 
 class Case(models.Model):
@@ -206,7 +206,7 @@ class Case(models.Model):
   admin_objects = AdminManager()
 
   def __str__(self):
-    return f"Case<{self.patient.full_name} ({self.created_at})>"
+    return f"Case<({self.id}) {self.patient.full_name} ({self.created_at})>"
 
 
 class CaseChiefComplaint(models.Model):
@@ -239,8 +239,14 @@ class CaseChiefComplaint(models.Model):
 
 
 class CaseFinding(models.Model):
+  SEVERITY_CHOICES = [
+    ('LOW', 'Low'),
+    ('HIGH', 'High'),
+  ]
+
   case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name="findings")
   title = models.CharField(max_length=255, blank=True, null=True)
+  severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES, blank=True, null=True)
   is_active = models.BooleanField(default=True)
   # created_at = models.DateTimeField(default=datetime.now)
   created_at = models.DateTimeField(auto_now_add=True)
@@ -250,7 +256,25 @@ class CaseFinding(models.Model):
   admin_objects = AdminManager()
 
   def __str__(self):
-    return f"CaseFinding<{self.title}>"
+    return f"CaseFinding<({self.id}) {self.title}>"
+
+
+class FindingImage(models.Model):
+  case_finding = models.ForeignKey(CaseFinding, on_delete=models.CASCADE, related_name="finding_images", null=True)
+  file_name = models.CharField(max_length=255, blank=True, null=True)
+  file_extension = models.CharField(max_length=10, blank=True, null=True)
+  uploaded_file_name = models.CharField(max_length=512, blank=True, null=True)
+  file_url = models.URLField(blank=True, null=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"FindingImage<{self.file_name}.{self.file_extension} ({self.file_url})>"
 
 
 class CaseDocument(models.Model):

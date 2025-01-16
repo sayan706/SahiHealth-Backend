@@ -80,7 +80,7 @@ class CaseDocumentAPIView(APIView):
             document_section=document_section,
           )
 
-          # Accumulate all uploaded files in a list
+          # Insert the uploaded file in a list
           caseDocuments.append(caseDocument)
 
         serializedCaseDocuments = CaseDocumentSerializer(
@@ -161,10 +161,16 @@ class CaseDocumentAPIView(APIView):
       if os.path.exists(final_file_path):
         os.remove(final_file_path)
 
-      serializedCaseDocument = CaseDocumentSerializer(instance=caseDocument)
+      serializedCaseDocument = CaseDocumentSerializer(
+        instance=caseDocument,
+        fields=[
+          'file_name',
+          'file_extension'
+        ]
+      )
 
       return custom_response_handler(
         status=status.HTTP_200_OK,
-        message='File removed successfully',
+        message='File has been successfully deleted',
         data=serializedCaseDocument.data
       )

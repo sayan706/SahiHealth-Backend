@@ -10,6 +10,9 @@ from app.v1.auth.views import LoginAPIView, LogoutAPIView
 from app.v1.patient.views import PatientAPIView
 from app.v1.appointment.views import AppointmentAPIView
 from app.v1.case.views import CaseAPIView
+from app.v1.case_chief_complaint.views import CaseChiefComplaintAPIView
+from app.v1.case_finding.views import CaseFindingAPIView
+from app.v1.finding_image.views import FindingImageAPIView
 from app.v1.case_document.views import CaseDocumentAPIView
 
 
@@ -31,6 +34,10 @@ urlpatterns=[
   path('case/<int:pk>', CaseAPIView.as_view()),
   path('appointment', AppointmentAPIView.as_view()),
   path('speciality', SpecialityAPIView.as_view()),
+  path('case-chief-complaint/<int:pk>', CaseChiefComplaintAPIView.as_view()),
+  path('case-finding/<int:pk>', CaseFindingAPIView.as_view()),
+  path('finding-image/upload', FindingImageAPIView.as_view(), {'action': 'upload'}),
+  path('finding-image/remove/<int:pk>', FindingImageAPIView.as_view(), {'action': 'remove'}),
   path('case-document/upload', CaseDocumentAPIView.as_view(), {'action': 'upload'}),
   path('case-document/rename/<int:pk>', CaseDocumentAPIView.as_view(), {'action': 'rename'}),
   path('case-document/remove/<int:pk>', CaseDocumentAPIView.as_view(), {'action': 'remove'}),

@@ -1,7 +1,7 @@
 from utils import exceptions
 from rest_framework import serializers
 from app.dynamic_serializer import DynamicFieldsModelSerializer
-from app.models import Doctor, Patient, Case, CaseChiefComplaint, CaseDocument, CaseFinding
+from app.models import Doctor, Patient, Case, CaseChiefComplaint, CaseDocument, CaseFinding, FindingImage
 from app.serializers.doctor import DoctorSerializer
 from app.serializers.patient import PatientSerializer
 from app.serializers.case_document import CaseDocumentSerializer
@@ -260,7 +260,9 @@ class UpdateCaseSerializer(DynamicFieldsModelSerializer):
         CaseChiefComplaint.objects.create(case=instance, **chief_complaint)
 
     for finding in findings:
+      finding_instance = None
       finding_id = finding.get('id', None)
+      finding_images = finding.pop('images', None)
 
       if finding_id is not None:
         finding_instance = CaseFinding.objects.get(id=finding_id)
@@ -270,6 +272,16 @@ class UpdateCaseSerializer(DynamicFieldsModelSerializer):
 
         finding_instance.save()
       else:
-        CaseFinding.objects.create(case=instance, **finding)
+        finding_instance = CaseFinding.objects.create(case=instance, **finding)
+
+      if finding_images is not None:
+        for finding_image in finding_images:
+          findingImage = FindingImage.objects.get(id=finding_image)
+
+          if not findingImage.case_finding:
+            findingImage.case_finding = finding_instance
+            findingImage.save()
+
+        # CaseFinding.objects.create(case=instance, **finding)
 
     return instance

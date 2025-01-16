@@ -85,7 +85,7 @@ def upload_dp(request):
 
       return custom_response_handler(
         status=status.HTTP_201_CREATED,
-        message="Profile picture uploaded successfully",
+        message='Profile picture uploaded successfully',
         data={
           'file_name': uploaded_file_name,
           'file_url': uploaded_file_url,
@@ -111,7 +111,7 @@ def upload_dp(request):
 
     return custom_response_handler(
       status=status.HTTP_200_OK,
-      message="Profile picture removed successfully",
+      message='Profile picture has been successfully deleted',
       data={
         'file_url': None,
       }
