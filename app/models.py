@@ -300,3 +300,73 @@ class CaseDocument(models.Model):
 
   def __str__(self):
     return f"CaseDocument<{self.file_name}.{self.file_extension} ({self.file_url})>"
+
+
+class MedicineDoseType(models.Model):
+  name = models.CharField(max_length=100, unique=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"MedicineDoseType<({self.id}) {self.name}>"
+
+
+class MedicineName(models.Model):
+  name = models.CharField(max_length=255, unique=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"MedicineName<({self.id}) {self.name}>"
+
+
+class MedicineDoseQuantity(models.Model):
+  quantity = models.CharField(max_length=100, unique=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"MedicineDoseQuantity<{self.quantity}>"
+
+
+class MedicineDoseRegimen(models.Model):
+  name = models.CharField(max_length=100, unique=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"MedicineDoseRegimen<({self.id}) {self.name}>"
+
+
+class MedicineDoseDuration(models.Model):
+  duration = models.CharField(max_length=50, unique=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"MedicineDoseDuration<{self.duration}>"
