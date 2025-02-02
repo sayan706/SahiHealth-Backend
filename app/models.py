@@ -235,7 +235,7 @@ class CaseChiefComplaint(models.Model):
   admin_objects = AdminManager()
 
   def __str__(self):
-    return f"CaseChiefComplaint<{self.title} ({self.severity} - {self.duration} {self.duration_unit})>"
+    return f"CaseChiefComplaint<{self.title} ({self.duration} {self.duration_unit})>"
 
 
 class CaseFinding(models.Model):
@@ -329,7 +329,7 @@ class MedicineName(models.Model):
   admin_objects = AdminManager()
 
   def __str__(self):
-    return f"MedicineName<({self.id}) {self.name}>"
+    return f"MedicineName<{self.name}>"
 
 
 class MedicineDoseType(models.Model):
@@ -343,7 +343,7 @@ class MedicineDoseType(models.Model):
   admin_objects = AdminManager()
 
   def __str__(self):
-    return f"MedicineDoseType<({self.id}) {self.name}>"
+    return f"MedicineDoseType<{self.name}>"
 
 
 class MedicineDoseQuantity(models.Model):
@@ -371,7 +371,7 @@ class MedicineDoseRegimen(models.Model):
   admin_objects = AdminManager()
 
   def __str__(self):
-    return f"MedicineDoseRegimen<({self.id}) {self.name}>"
+    return f"MedicineDoseRegimen<{self.name}>"
 
 
 class MedicineDoseDuration(models.Model):
