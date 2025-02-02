@@ -12,11 +12,14 @@ from .models import (
   CaseFinding,
   FindingImage,
   CaseDocument,
+  Prescription,
   MedicineDoseType,
   MedicineName,
   MedicineDoseQuantity,
   MedicineDoseRegimen,
-  MedicineDoseDuration
+  MedicineDoseDuration,
+  Medicine,
+  DietAdvice
 )
 
 
@@ -87,6 +90,11 @@ class CaseDocumentAdmin(admin.ModelAdmin):
   list_display = [i.name for i in CaseDocument._meta.fields]
 
 
+@admin.register(Prescription)
+class PrescriptionAdmin(admin.ModelAdmin):
+  list_display = [i.name for i in Prescription._meta.fields]
+
+
 @admin.register(MedicineDoseType)
 class MedicineDoseTypeAdmin(admin.ModelAdmin):
   list_display = [i.name for i in MedicineDoseType._meta.fields]
@@ -110,3 +118,13 @@ class MedicineDoseRegimenAdmin(admin.ModelAdmin):
 @admin.register(MedicineDoseDuration)
 class MedicineDoseDurationAdmin(admin.ModelAdmin):
   list_display = [i.name for i in MedicineDoseDuration._meta.fields]
+
+
+@admin.register(Medicine)
+class MedicineAdmin(admin.ModelAdmin):
+  list_display = [i.name for i in Medicine._meta.fields]
+
+
+@admin.register(DietAdvice)
+class DietAdviceAdmin(admin.ModelAdmin):
+  list_display = [i.name for i in DietAdvice._meta.fields]

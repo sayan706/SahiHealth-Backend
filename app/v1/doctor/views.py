@@ -36,8 +36,6 @@ class DoctorAPIView(APIView):
         serializedDoctor = DoctorSerializer(
           instance=doctor,
           exclude=[
-            'profile_picture',
-            'is_active',
             'created_at',
             'updated_at'
           ],

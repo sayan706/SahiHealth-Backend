@@ -302,8 +302,10 @@ class CaseDocument(models.Model):
     return f"CaseDocument<{self.file_name}.{self.file_extension} ({self.file_url})>"
 
 
-class MedicineDoseType(models.Model):
-  name = models.CharField(max_length=100, unique=True)
+class Prescription(models.Model):
+  case = models.OneToOneField(Case, on_delete=models.CASCADE, related_name="prescription")
+  note = models.TextField(blank=True, null=True)
+  referred_doctors = models.ManyToManyField(Doctor, blank=True, related_name="prescriptions")
   is_active = models.BooleanField(default=True)
   # created_at = models.DateTimeField(default=datetime.now)
   created_at = models.DateTimeField(auto_now_add=True)
@@ -313,7 +315,7 @@ class MedicineDoseType(models.Model):
   admin_objects = AdminManager()
 
   def __str__(self):
-    return f"MedicineDoseType<({self.id}) {self.name}>"
+    return f"Prescription<({self.id}) Case-{self.case.id}>"
 
 
 class MedicineName(models.Model):
@@ -328,6 +330,20 @@ class MedicineName(models.Model):
 
   def __str__(self):
     return f"MedicineName<({self.id}) {self.name}>"
+
+
+class MedicineDoseType(models.Model):
+  name = models.CharField(max_length=100, unique=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"MedicineDoseType<({self.id}) {self.name}>"
 
 
 class MedicineDoseQuantity(models.Model):
@@ -370,3 +386,37 @@ class MedicineDoseDuration(models.Model):
 
   def __str__(self):
     return f"MedicineDoseDuration<{self.duration}>"
+
+
+class Medicine(models.Model):
+  prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE, related_name="medicines")
+  name = models.ForeignKey(MedicineName, on_delete=models.CASCADE)
+  dose_type = models.ForeignKey(MedicineDoseType, on_delete=models.CASCADE)
+  dose_quantity = models.ForeignKey(MedicineDoseQuantity, on_delete=models.CASCADE)
+  dose_regimens = models.ManyToManyField(MedicineDoseRegimen, related_name="medicines")
+  dose_duration = models.ForeignKey(MedicineDoseDuration, on_delete=models.CASCADE)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"Medicine<({self.id}) {self.name}>"
+
+
+class DietAdvice(models.Model):
+  prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE, related_name="diet_advices")
+  description = models.CharField(max_length=255)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"DietAdvice<{self.description}>"

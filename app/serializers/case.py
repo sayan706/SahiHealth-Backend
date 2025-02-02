@@ -1,9 +1,10 @@
 from utils import exceptions
 from rest_framework import serializers
 from app.dynamic_serializer import DynamicFieldsModelSerializer
-from app.models import Doctor, Patient, Case, CaseChiefComplaint, CaseDocument, CaseFinding, FindingImage
+from app.models import Doctor, Patient, Case, CaseChiefComplaint, CaseFinding, FindingImage, CaseDocument
 from app.serializers.doctor import DoctorSerializer
 from app.serializers.patient import PatientSerializer
+from app.serializers.prescription import PrescriptionSerializer
 from app.serializers.case_document import CaseDocumentSerializer
 from app.serializers.case_finding import CaseFindingSerializer, UpdateCaseFindingSerializer
 from app.serializers.case_chief_complaint import (
@@ -64,6 +65,10 @@ class CaseSerializer(DynamicFieldsModelSerializer):
     ]
   )
 
+  prescription = PrescriptionSerializer(
+    exclude=['id']
+  )
+
   chief_complaints = CaseChiefComplaintSerializer(many=True)
   documents = CaseDocumentSerializer(many=True)
   findings = CaseFindingSerializer(many=True)
@@ -93,6 +98,7 @@ class CaseSerializer(DynamicFieldsModelSerializer):
       'follow_up_id',
       'follow_up_date',
       'is_completed',
+      'prescription',
       'is_active',
       'created_at',
       'updated_at'
@@ -135,8 +141,8 @@ class CreateCaseSerializer(DynamicFieldsModelSerializer):
   def validate(self, attrs):
     doctor = None
     patient = None
-    doctor_id = attrs.get('doctor_id', None)
-    patient_id = attrs.get('patient_id', None)
+    doctor_id = attrs.pop('doctor_id', None)
+    patient_id = attrs.pop('patient_id', None)
 
     if doctor_id is not None:
       try:
@@ -161,12 +167,6 @@ class CreateCaseSerializer(DynamicFieldsModelSerializer):
       attrs['assigned_doctor'] = doctor
     if patient is not None:
       attrs['patient'] = patient
-
-    # Remove after usecase as these fields are not in Patient
-    if doctor_id is not None:
-      attrs.pop('doctor_id')
-    if patient_id is not None:
-      attrs.pop('patient_id')
 
     return attrs
 
@@ -238,14 +238,7 @@ class UpdateCaseSerializer(DynamicFieldsModelSerializer):
 
     instance.save()
 
-    # instance.chief_complaints.clear()
-    # for chief_complaint in chief_complaints:
-    #   CaseChiefComplaint.objects.create(case=instance, **chief_complaint)
-
-    # instance.findings.clear()
-    # for finding in findings:
-    #   CaseFinding.objects.create(case=instance, **finding)
-
+    # Create or update chief_complaints and findings
     for chief_complaint in chief_complaints:
       chief_complaint_id = chief_complaint.get('id', None)
 
@@ -281,7 +274,5 @@ class UpdateCaseSerializer(DynamicFieldsModelSerializer):
           if not findingImage.case_finding:
             findingImage.case_finding = finding_instance
             findingImage.save()
-
-        # CaseFinding.objects.create(case=instance, **finding)
 
     return instance
