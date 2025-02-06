@@ -68,7 +68,7 @@ class CaseDocumentAPIView(APIView):
             for chunk in file.chunks():
               destination.write(chunk)
 
-          uploaded_file_url = f'{BACKEND_URL}{settings.MEDIA_URL}case/{case_id}/{document_section}/{uploaded_file_name}'
+          uploaded_file_url = f'{BACKEND_URL}{settings.MEDIA_URL}case/{case_id}/{str(document_section).lower()}/{uploaded_file_name}'
 
           # Create a document with the provided case_id
           caseDocument = CaseDocument.objects.create(
