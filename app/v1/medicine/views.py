@@ -5,12 +5,14 @@ from utils.response_handler import custom_response_handler
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+# from app.serializers.medicine import MedicineSerializer
 from app.serializers.medicine_name import MedicineNameSerializer
 from app.serializers.medicine_dose_type import MedicineDoseTypeSerializer
 from app.serializers.medicine_dose_quantity import MedicineDoseQuantitySerializer
 from app.serializers.medicine_dose_regimen import MedicineDoseRegimenSerializer
 from app.serializers.medicine_dose_duration import MedicineDoseDurationSerializer
 from app.models import (
+  Medicine,
   MedicineName,
   MedicineDoseType,
   MedicineDoseQuantity,
@@ -19,7 +21,7 @@ from app.models import (
 )
 
 
-class MedicineStuffsAPIView(APIView):
+class MedicineStuffAPIView(APIView):
   authentication_classes = [TokenAuthentication]
   permission_classes = [IsAuthenticated]
 
@@ -58,7 +60,7 @@ class MedicineStuffsAPIView(APIView):
 
     return custom_response_handler(
       status=status.HTTP_200_OK,
-      message=f'Get {type_param}(s)',
+      message=f'Get medicine {type_param}(s)',
       data=serializer.data
     )
 
@@ -131,7 +133,7 @@ class MedicineStuffsAPIView(APIView):
 
     try:
       instance = model.objects.get(id=pk)
-    except instance.DoesNotExist:
+    except model.DoesNotExist:
       raise exceptions.DoesNotExistException(
         detail=f'No medicine {type_param} found with id {pk}',
         code=f'Medicine {type_param} not found'
@@ -156,4 +158,29 @@ class MedicineStuffsAPIView(APIView):
       status=status.HTTP_200_OK,
       message=f'Medicine {type_param} updated',
       data=serializer.data
+    )
+
+
+class MedicineAPIView(APIView):
+  authentication_classes = [TokenAuthentication]
+  permission_classes = [IsAuthenticated]
+
+  def delete(self, request, pk, format=None):
+    medicine = None
+
+    try:
+      medicine = Medicine.objects.get(id=pk)
+    except Medicine.DoesNotExist:
+      raise exceptions.DoesNotExistException(
+        detail=f'No medicine found with id {pk}',
+        code='Medicine not found'
+      )
+
+    medicine.delete()
+    # serializedMedicine = MedicineSerializer(instance=medicine)
+
+    return custom_response_handler(
+      status=status.HTTP_200_OK,
+      message=f"Medicine '{medicine.name}' has been successfully deleted",
+      data=None
     )
