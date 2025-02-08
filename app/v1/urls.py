@@ -44,5 +44,6 @@ urlpatterns=[
   path('case-document/rename/<int:pk>', CaseDocumentAPIView.as_view(), {'action': 'rename'}),
   path('case-document/remove/<int:pk>', CaseDocumentAPIView.as_view(), {'action': 'remove'}),
   path('prescription', PrescriptionAPIView.as_view()),
-  path('medicine-stuffs', MedicineStuffsAPIView.as_view())
+  path('medicine-stuffs', MedicineStuffsAPIView.as_view()),
+  path('medicine-stuffs/<int:pk>', MedicineStuffsAPIView.as_view())
 ]

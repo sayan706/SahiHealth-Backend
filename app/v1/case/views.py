@@ -121,14 +121,15 @@ class CaseAPIView(APIView):
       )
 
   def patch(self, request, pk, format=None):
-    if pk is not None:
-      try:
-        case = Case.objects.get(id=pk)
-      except Case.DoesNotExist:
-        raise exceptions.DoesNotExistException(
-          detail=f'No case found with id {pk}',
-          code='Case not found'
-        )
+    case = None
+
+    try:
+      case = Case.objects.get(id=pk)
+    except Case.DoesNotExist:
+      raise exceptions.DoesNotExistException(
+        detail=f'No case found with id {pk}',
+        code='Case not found'
+      )
 
     serializedUpdateCase = UpdateCaseSerializer(
       instance=case,
