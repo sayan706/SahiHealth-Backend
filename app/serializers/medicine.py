@@ -31,3 +31,19 @@ class CreateMedicineSerializer(DynamicFieldsModelSerializer):
       'created_at',
       'updated_at'
     ]
+
+
+class UpdateMedicineSerializer(DynamicFieldsModelSerializer):
+  # Allow id to be optional to update
+  id = serializers.IntegerField(required=True)
+
+  class Meta:
+    model = Medicine
+    fields = [
+      'id',
+      'name',
+      'dose_type',
+      'dose_quantity',
+      'dose_regimens',
+      'dose_duration'
+    ]
