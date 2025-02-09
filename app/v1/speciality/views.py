@@ -17,6 +17,6 @@ class SpecialityAPIView(APIView):
 
     return custom_response_handler(
       status=status.HTTP_200_OK,
-      message="Get All Specialities",
+      message="Get all specialities",
       data=serializedSpecialities.data
     )

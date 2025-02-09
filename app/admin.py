@@ -19,6 +19,10 @@ from .models import (
   MedicineDoseRegimen,
   MedicineDoseDuration,
   Medicine,
+  Diagnosis,
+  DiagnosisItem,
+  Investigation,
+  InvestigationItem,
   DietAdvice
 )
 
@@ -123,6 +127,26 @@ class MedicineDoseDurationAdmin(admin.ModelAdmin):
 @admin.register(Medicine)
 class MedicineAdmin(admin.ModelAdmin):
   list_display = [i.name for i in Medicine._meta.fields]
+
+
+@admin.register(Diagnosis)
+class DiagnosisAdmin(admin.ModelAdmin):
+  list_display = [i.name for i in Diagnosis._meta.fields]
+
+
+@admin.register(DiagnosisItem)
+class DiagnosisItemAdmin(admin.ModelAdmin):
+  list_display = [i.name for i in DiagnosisItem._meta.fields]
+
+
+@admin.register(Investigation)
+class InvestigationAdmin(admin.ModelAdmin):
+  list_display = [i.name for i in Investigation._meta.fields]
+
+
+@admin.register(InvestigationItem)
+class InvestigationItemAdmin(admin.ModelAdmin):
+  list_display = [i.name for i in InvestigationItem._meta.fields]
 
 
 @admin.register(DietAdvice)

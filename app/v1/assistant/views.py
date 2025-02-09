@@ -46,7 +46,7 @@ class AssistantAPIView(APIView):
           ]
         )
         data = serializedAssistant.data
-        message = "Get Assistant"
+        message = "Get assistant"
       except Assistant.DoesNotExist:
         raise exceptions.DoesNotExistException(
           detail=f'Requested assistant profile not found',
@@ -104,7 +104,7 @@ class AssistantAPIView(APIView):
         'page_size': page_size,
         'values': serializedAssistants.data,
       }
-      message = "Get All Assistants"
+      message = "Get all assistants"
 
     return custom_response_handler(
       status=status.HTTP_200_OK,

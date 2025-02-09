@@ -5,7 +5,7 @@ from utils.response_handler import custom_response_handler
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-# from app.serializers.medicine import MedicineSerializer
+from app.serializers.medicine import MedicineSerializer
 from app.serializers.medicine_name import MedicineNameSerializer
 from app.serializers.medicine_dose_type import MedicineDoseTypeSerializer
 from app.serializers.medicine_dose_quantity import MedicineDoseQuantitySerializer
@@ -60,7 +60,7 @@ class MedicineStuffAPIView(APIView):
 
     return custom_response_handler(
       status=status.HTTP_200_OK,
-      message=f'Get medicine {type_param}(s)',
+      message=f'Get all medicine {type_param}(s)',
       data=serializer.data
     )
 
@@ -177,10 +177,10 @@ class MedicineAPIView(APIView):
       )
 
     medicine.delete()
-    # serializedMedicine = MedicineSerializer(instance=medicine)
+    serializedMedicine = MedicineSerializer(instance=medicine)
 
     return custom_response_handler(
       status=status.HTTP_200_OK,
-      message=f"Medicine '{medicine.name}' has been successfully deleted",
-      data=None
+      message=f'1 item has been deleted',
+      data=serializedMedicine.data
     )

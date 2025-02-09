@@ -52,7 +52,7 @@ class DoctorAPIView(APIView):
           ]
         )
         data = serializedDoctor.data
-        message = "Get Doctor"
+        message = "Get doctor"
       except Doctor.DoesNotExist:
         raise exceptions.DoesNotExistException(
           detail=f'No doctor found with id {pk}',
@@ -89,7 +89,7 @@ class DoctorAPIView(APIView):
           ]
         )
         data = serializedDoctor.data
-        message = "Get Doctor"
+        message = "Get doctor"
       except Doctor.DoesNotExist:
         raise exceptions.DoesNotExistException(
           detail=f'Requested doctor profile not found',
@@ -111,10 +111,10 @@ class DoctorAPIView(APIView):
 
       if speciality_id:
         doctors = Doctor.objects.filter(speciality_id=speciality_id)
-        message = "Get Doctors by Speciality"
+        message = "Get doctors by speciality"
       else:
         doctors = Doctor.objects.all()
-        message = "Get All Doctors"
+        message = "Get all doctors"
 
       # Apply search filter
       search_filter = SearchFilter()

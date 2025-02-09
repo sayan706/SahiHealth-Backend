@@ -17,7 +17,7 @@ class DietAdviceSerializer(DynamicFieldsModelSerializer):
 
 class UpdateDietAdviceSerializer(DynamicFieldsModelSerializer):
   # Allow id to be optional to update
-  id = serializers.IntegerField(required=True)
+  id = serializers.IntegerField(required=False, allow_null=True)
 
   class Meta:
     model = DietAdvice

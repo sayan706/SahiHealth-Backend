@@ -16,6 +16,8 @@ from app.v1.finding_image.views import FindingImageAPIView
 from app.v1.case_document.views import CaseDocumentAPIView
 from app.v1.prescription.views import PrescriptionAPIView
 from app.v1.medicine.views import MedicineAPIView, MedicineStuffAPIView
+from app.v1.diagnosis_item.views import DiagnosisAPIView, DiagnosisItemAPIView
+from app.v1.investigation_item.views import InvestigationAPIView, InvestigationItemAPIView
 from app.v1.diet_advice.views import DietAdviceAPIView
 
 
@@ -46,8 +48,14 @@ urlpatterns=[
   path('case-document/remove/<int:pk>', CaseDocumentAPIView.as_view(), {'action': 'remove'}),
   path('prescription', PrescriptionAPIView.as_view()),
   path('prescription/<int:pk>', PrescriptionAPIView.as_view()),
-  path('medicine/<int:pk>', MedicineAPIView.as_view()),
   path('medicine-stuff', MedicineStuffAPIView.as_view()),
   path('medicine-stuff/<int:pk>', MedicineStuffAPIView.as_view()),
+  path('medicine/<int:pk>', MedicineAPIView.as_view()),
+  path('diagnosis', DiagnosisAPIView.as_view()),
+  path('diagnosis/<int:pk>', DiagnosisAPIView.as_view()),
+  path('diagnosis-item/<int:pk>', DiagnosisItemAPIView.as_view()),
+  path('investigation', InvestigationAPIView.as_view()),
+  path('investigation/<int:pk>', InvestigationAPIView.as_view()),
+  path('investigation-item/<int:pk>', InvestigationItemAPIView.as_view()),
   path('diet-advice/<int:pk>', DietAdviceAPIView.as_view())
 ]

@@ -30,7 +30,7 @@ class CaseAPIView(APIView):
           ]
         )
         data = serializedCase.data
-        message = 'Get Case'
+        message = 'Get case'
       except Case.DoesNotExist:
         raise exceptions.DoesNotExistException(
           detail=f'No case found with id {pk}',
@@ -88,7 +88,7 @@ class CaseAPIView(APIView):
         'page_size': page_size,
         'values': serializedCases.data,
       }
-      message = 'Get Cases by Patient'
+      message = 'Get cases by patient'
 
     return custom_response_handler(
       status=status.HTTP_200_OK,

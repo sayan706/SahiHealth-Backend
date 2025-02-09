@@ -407,6 +407,64 @@ class Medicine(models.Model):
     return f"Medicine<({self.id}) {self.name}>"
 
 
+class Diagnosis(models.Model):
+  title = models.CharField(max_length=255, unique=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"Diagnosis<{self.title}>"
+
+
+class DiagnosisItem(models.Model):
+  prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE, related_name="diagnosis_items")
+  diagnosis = models.ForeignKey(Diagnosis, on_delete=models.CASCADE)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"DiagnosisItem<({self.id}) {self.diagnosis}>"
+
+
+class Investigation(models.Model):
+  title = models.CharField(max_length=255, unique=True)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"Investigation<{self.title}>"
+
+
+class InvestigationItem(models.Model):
+  prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE, related_name="investigation_items")
+  investigation = models.ForeignKey(Investigation, on_delete=models.CASCADE)
+  is_active = models.BooleanField(default=True)
+  # created_at = models.DateTimeField(default=datetime.now)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  objects = ActiveManager()
+  admin_objects = AdminManager()
+
+  def __str__(self):
+    return f"InvestigationItem<({self.id}) {self.investigation}>"
+
+
 class DietAdvice(models.Model):
   prescription = models.ForeignKey(Prescription, on_delete=models.CASCADE, related_name="diet_advices")
   description = models.CharField(max_length=255)
