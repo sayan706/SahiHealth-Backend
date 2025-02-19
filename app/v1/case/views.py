@@ -71,6 +71,7 @@ class CaseAPIView(APIView):
         fields=[
           'id',
           'assigned_doctor',
+          'chief_complaints',
           'findings',
           'is_follow_up',
           'follow_up_date',

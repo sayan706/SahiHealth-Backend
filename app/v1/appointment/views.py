@@ -1,6 +1,7 @@
 from utils import exceptions
 from collections import defaultdict
 from datetime import datetime, timedelta
+from django.utils.timezone import now
 from rest_framework.views import APIView
 from utils.response_handler import custom_response_handler
 from rest_framework import status
@@ -11,6 +12,44 @@ from django.db.models.functions import TruncDate
 from app.models import Profile, Doctor, Case
 from app.serializers.patient import PatientSerializer, CreatePatientSerializer
 from app.serializers.case import AppointmentSerializer
+
+
+def get_cases_by_date(doctor, date_in_str):
+  date_in_obj = None
+  grouped_cases = defaultdict(list)
+
+  if date_in_str == "today":
+    date_in_obj = now().date()
+  elif date_in_str == "yesterday":
+    date_in_obj = now().date() - timedelta(days=1)
+  else:
+    date_in_obj = datetime.strptime(date_in_str, "%Y-%m-%d").date()
+
+  cases = Case.objects.filter(assigned_doctor=doctor, created_at__date=date_in_obj)
+
+  for case in cases:
+    if case.is_completed:
+      grouped_cases["Complete"].append(case)
+    else:
+      grouped_cases["Incomplete"].append(case)
+
+  # Flatten grouped cases into a list for pagination
+  flattened_cases = []
+
+  for status, case_list in grouped_cases.items():
+    serializedAppointments = AppointmentSerializer(
+      case_list,
+      many=True,
+      fields=[
+        'id',
+        'patient',
+        'assigned_doctor',
+        'is_completed'
+      ]
+    )
+    flattened_cases.append({"status": status, "appointments": serializedAppointments.data})
+
+  return flattened_cases
 
 
 def get_cases_grouped_by_date(doctor):
@@ -88,7 +127,7 @@ class AppointmentAPIView(APIView):
       try:
         doctor = Doctor.objects.get(id=doctor_id)
         appointments = get_cases_grouped_by_date(doctor)
-        message = "Get Appointments by Doctor"
+        message = "Get appointments by doctor"
       except Doctor.DoesNotExist:
         raise exceptions.DoesNotExistException(
           detail=f'No doctor found with id {doctor_id}',
@@ -97,8 +136,13 @@ class AppointmentAPIView(APIView):
     elif profile.role == 'DOCTOR':
       try:
         doctor = Doctor.objects.get(profile=profile)
-        appointments = get_cases_grouped_by_date(doctor)
-        message = "Get Appointments by Current Doctor"
+
+        if 'date_in_str' in query_params:
+          appointments = get_cases_by_date(doctor, str(query_params['date_in_str']).lower())
+          message = "Get appointments by current doctor and date"
+        else:
+          appointments = get_cases_grouped_by_date(doctor)
+          message = "Get appointments by current doctor"
       except Doctor.DoesNotExist:
         raise exceptions.DoesNotExistException(
           detail=f'No doctor found with this profile',
@@ -128,7 +172,8 @@ class AppointmentAPIView(APIView):
         'current_page': current_page,
         'next_page': None if (paginator.num_pages - current_page) <= 0 else current_page + 1,
         'page_size': page_size,
-        'values': appointments if isinstance(appointments, list) else list(appointments),
+        **({'date_in_str': str(query_params['date_in_str']).capitalize()} if 'date_in_str' in query_params else {}),
+        'values': appointments if isinstance(appointments, list) else list(appointments)
       }
 
     return custom_response_handler(
