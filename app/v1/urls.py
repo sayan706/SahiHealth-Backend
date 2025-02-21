@@ -1,12 +1,11 @@
 from django.urls import path
 from app.v1.profile.views import upload_dp
+from app.v1.auth.views import LoginAPIView, LogoutAPIView
 from app.v1.doctor.views import DoctorAPIView
 from app.v1.speciality.views import SpecialityAPIView
 from app.v1.assistant.views import AssistantAPIView
 from app.v1.disease.views import DiseaseAPIView
 from app.v1.habit.views import HabitAPIView
-from app.v1.patient.views import PatientAPIView
-from app.v1.auth.views import LoginAPIView, LogoutAPIView
 from app.v1.patient.views import PatientAPIView
 from app.v1.appointment.views import AppointmentAPIView
 from app.v1.case.views import CaseAPIView

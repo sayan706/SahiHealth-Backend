@@ -158,3 +158,23 @@ class CaseAPIView(APIView):
         detail=serializedUpdateCase.errors,
         code='Invalid request data'
       )
+
+  def delete(self, request, pk, format=None):
+    case = None
+
+    try:
+      case = Case.objects.get(id=pk)
+    except Case.DoesNotExist:
+      raise exceptions.DoesNotExistException(
+        detail=f'No case found with id {pk}',
+        code='Case not found'
+      )
+
+    # Delete the retrieved case
+    case.delete()
+
+    return custom_response_handler(
+      status=status.HTTP_200_OK,
+      message='Case has been successfully removed',
+      data=None
+    )

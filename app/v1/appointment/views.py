@@ -183,26 +183,26 @@ class AppointmentAPIView(APIView):
       data=data
     )
 
-  def post(self, request, format=None):
-    request_data = request.data
+  # def post(self, request, format=None):
+  #   request_data = request.data
 
-    # Retrieve the profile instance from the request user
-    profile = Profile.objects.get(user=request.user)
+  #   # Retrieve the profile instance from the request user
+  #   profile = Profile.objects.get(user=request.user)
 
-    request_data['creator_profile_id'] = profile.id
-    serializedCreatePatient = CreatePatientSerializer(data=request_data)
+  #   request_data['creator_profile_id'] = profile.id
+  #   serializedCreatePatient = CreatePatientSerializer(data=request_data)
 
-    if serializedCreatePatient.is_valid():
-      patient = serializedCreatePatient.save()
-      serializedPatient = PatientSerializer(instance=patient)
+  #   if serializedCreatePatient.is_valid():
+  #     patient = serializedCreatePatient.save()
+  #     serializedPatient = PatientSerializer(instance=patient)
 
-      return custom_response_handler(
-        status=status.HTTP_200_OK,
-        message="Patient created successfully",
-        data=serializedPatient.data
-      )
-    else:
-      raise exceptions.InvalidRequestBodyException(
-        detail=serializedCreatePatient.errors,
-        code='Invalid request data'
-      )
+  #     return custom_response_handler(
+  #       status=status.HTTP_200_OK,
+  #       message="Patient created successfully",
+  #       data=serializedPatient.data
+  #     )
+  #   else:
+  #     raise exceptions.InvalidRequestBodyException(
+  #       detail=serializedCreatePatient.errors,
+  #       code='Invalid request data'
+  #     )
