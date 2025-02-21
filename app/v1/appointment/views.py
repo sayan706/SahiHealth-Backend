@@ -54,11 +54,12 @@ def get_cases_by_date(doctor, date_in_str):
 
 def get_cases_grouped_by_date(doctor):
   grouped_cases = defaultdict(list)
-  cases = (
-    Case.objects.filter(assigned_doctor=doctor)
-    .annotate(date=TruncDate('created_at'))  # Extract the date portion
-    .order_by('-created_at')  # Order by descending datetime
-  )
+  cases = Case.objects.filter(assigned_doctor=doctor).order_by('-created_at')
+  # cases = (
+  #   Case.objects.filter(assigned_doctor=doctor)
+  #   .annotate(date=TruncDate('created_at'))  # Extract the date portion
+  #   .order_by('-created_at')  # Order by descending datetime
+  # )
 
   for case in cases:
     # Get today's and yesterday's dates
