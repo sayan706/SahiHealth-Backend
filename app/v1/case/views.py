@@ -43,8 +43,39 @@ def generate_prescription_html(request):
         code='Case not found'
       )
 
+    serializedCase = CaseSerializer(
+      instance=case,
+      exclude=['is_active']
+    )
+    full_case = serializedCase.data
     context = {
-      'patient_name': case.patient.full_name
+      'blood_pressure_low': full_case['blood_pressure_low'],
+      'blood_pressure_high': full_case['blood_pressure_high'],
+      'pulse': full_case['pulse'],
+      'oxygen': full_case['oxygen'],
+      'body_temperature': full_case['body_temperature'],
+      'weight': full_case['weight'],
+      'patient_full_name': full_case['patient']['full_name'],
+      'patient_age': full_case['patient']['age'],
+      'patient_gender': full_case['patient']['gender'],
+      'patient_phone_number': full_case['patient']['phone_number'],
+      'patient_address': full_case['patient']['address'],
+      'patient_allergy': full_case['patient']['allergy'],
+      'patient_diseases': full_case['patient']['diseases'],
+      'patient_other_diseases': full_case['patient']['other_diseases'],
+      'chief_complaints_length': len(full_case['chief_complaints']),
+      'chief_complaints': full_case['chief_complaints'],
+      'findings_length': len(full_case['findings']),
+      'findings': full_case['findings'],
+      'medicines_length': len(full_case['prescription']['medicines']),
+      'medicines': full_case['prescription']['medicines'],
+      'diagnosis_items_length': len(full_case['prescription']['diagnosis_items']),
+      'diagnosis_items': full_case['prescription']['diagnosis_items'],
+      'investigation_items_length': len(full_case['prescription']['investigation_items']),
+      'investigation_items': full_case['prescription']['investigation_items'],
+      'referred_doctors_length': len(full_case['prescription']['referred_doctors']),
+      'referred_doctors': full_case['prescription']['referred_doctors'],
+      'prescription_note': full_case['prescription']['note'],
     }
     rendered_template = render_to_string("prescription.html", context)
 
@@ -122,8 +153,8 @@ class CaseAPIView(APIView):
             instance=doctor,
             fields=[
               'profile',
-              'speciality',
-              'degree'
+              'degree',
+              'speciality'
             ],
             profile_fields=[
               'first_name',
@@ -262,7 +293,6 @@ class CaseAPIView(APIView):
         code='Case not found'
       )
 
-    # Delete the retrieved case
     case.delete()
 
     return custom_response_handler(

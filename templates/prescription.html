@@ -69,7 +69,6 @@
       line-height: 1.2;
       text-align: right;
       font-weight: bold;
-      /* Ensures it stays aligned to the right */
     }
 
     .header-right .doctor-logo {
@@ -78,7 +77,6 @@
       height: auto;
       display: block;
       margin: 6px 0px;
-      /* Reduced space between logo & text */
     }
 
     .header-right .doctor-name {
@@ -87,7 +85,6 @@
       margin-bottom: 3px;
       text-decoration: underline;
       text-underline-offset: 4px;
-      /* Proper spacing */
     }
 
     .header-right .reg-number {
@@ -118,18 +115,18 @@
     }
 
     .vitals .vitals-content {
-      padding: 6px 0px;
-      padding-left: 16px;
+      padding: 6px 16px;
+      /* padding-left: 16px; */
     }
 
     .findings-examination {
-      height: 134px;
+      min-height: 160px;
       border-bottom: 1px solid #000;
     }
 
     .findings-examination .findings-examination-content {
-      padding-top: 6px;
-      padding-left: 16px;
+      padding: 6px 16px;
+      /* padding-left: 16px; */
     }
 
     .women-address img {
@@ -139,6 +136,8 @@
 
     .main-body-right {
       flex-grow: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     /* Patient Info */
@@ -156,8 +155,8 @@
     .allergy .allergy-content,
     .basic-info .basic-info-content,
     .disease-history .disease-history-content {
-      padding: 6px 0px;
-      padding-left: 16px;
+      padding: 6px 10px;
+      /* padding-left: 16px; */
     }
 
     .patient-info .allergy,
@@ -239,13 +238,14 @@
     }
 
     .signature-area {
+      flex-grow: 1;
       position: relative;
     }
 
     .doctor-stamp {
       z-index: 1;
-      right: 60px;
-      bottom: -180px;
+      right: 0px;
+      bottom: 0px;
       position: absolute;
     }
 
@@ -319,18 +319,24 @@
         <div class="vitals">
           <div class="vitals-content">
             <div><strong>Vitals:</strong></div>
-            <div><strong>BP-</strong> 100/120</div>
-            <div><strong>Pulse-</strong> 110</div>
-            <div><strong>Oxygen-</strong> 94%</div>
-            <div><strong>Body Temperature-</strong> 98F</div>
-            <div><strong>Weight-</strong> 70 KG</div>
+            <div><strong>BP-</strong> {{blood_pressure_low}}/{{blood_pressure_high}}</div>
+            <div><strong>Pulse-</strong> {{pulse}}</div>
+            <div><strong>Oxygen-</strong> {{oxygen}}%</div>
+            <div><strong>Body Temperature-</strong> {{body_temperature}}F</div>
+            <div><strong>Weight-</strong> {{weight}} KG</div>
           </div>
         </div>
 
         <div class="findings-examination">
           <div class="findings-examination-content">
-            <div><strong>Findings & Examination</strong></div>
-            <div>Acute fever, chills, vomiting</div>
+            <div><strong>Findings & Examination ({{findings_length}})</strong></div>
+            <div>
+              {% for finding in findings %}
+              <span>
+                {{finding.title}}{% if not forloop.last %}<span>, </span>{% endif %}
+              </span>
+              {% endfor %}
+            </div>
           </div>
         </div>
 
@@ -344,25 +350,30 @@
         <div class="patient-info">
           <div class="basic-info">
             <div class="basic-info-content">
-              <div><strong>Name:</strong> {{patient_name}}</div>
-              <div><strong>Age:</strong> 54</div>
-              <div><strong>Sex:</strong> Male</div>
-              <div><strong>Mobile No.:</strong> 1234567891</div>
-              <div><strong>Address:</strong> Mohangarh</div>
+              <div><strong>Name:</strong> {{patient_full_name}}</div>
+              <div><strong>Age:</strong> {{patient_age}}</div>
+              <div><strong>Sex:</strong> {{patient_gender}}</div>
+              <div><strong>Mobile No.:</strong> {{patient_phone_number}}</div>
+              <div><strong>Address:</strong> {{patient_address}}</div>
             </div>
           </div>
 
           <div class="allergy">
             <div class="allergy-content">
               <div><strong>Allergy:</strong></div>
-              <div>None</div>
+              <div>{{patient_allergy}}</div>
             </div>
           </div>
 
           <div class="disease-history">
             <div class="disease-history-content">
               <div><strong>Disease History:</strong></div>
-              <div>Pneumonia</div>
+              <div>
+                {% for disease in patient_diseases %}
+                <span>{{disease.name}}, </span>
+                {% endfor %}
+                <span>{{patient_other_diseases}}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -370,69 +381,80 @@
         <div class="prescription-info">
           <div class="other-stuff">
             <div>
-              <strong>Chief Complaints:</strong>
-              <span>Acute fever,</span>
-              <span>chills,</span>
-              <span>vomiting</span>
+              <strong>Chief Complaints ({{chief_complaints_length}}):</strong>
+              {% for chief_complaint in chief_complaints %}
+              <span>
+                {{chief_complaint.title}}{% if not forloop.last %}<span>, </span>{% endif %}
+              </span>
+              {% endfor %}
             </div>
+
             <div>
-              <strong>Diagnosis:</strong>
-              <span>Viral</span>
+              <strong>Diagnosis ({{diagnosis_items_length}}):</strong>
+              {% for diagnosis_item in diagnosis_items %}
+              <span>
+                ({{diagnosis_item.diagnosis}}){% if not forloop.last %}<span>, </span>{% endif %}
+              </span>
+              {% endfor %}
             </div>
+
             <div>
-              <strong>Recommended Investigation:</strong>
-              <span>CBC</span>
+              <strong>Recommended Investigation ({{investigation_items_length}}):</strong>
+              {% for investigation_item in investigation_items %}
+              <span>
+                {{investigation_item.investigation}}{% if not forloop.last %}<span>, </span>{% endif %}
+              </span>
+              {% endfor %}
             </div>
+
             <div>
-              <strong>Referred Doctors:</strong>
-              <span>N/A</span>
+              <strong>Referred Doctors ({{referred_doctors_length}}):</strong>
+              {% for referred_doctor in referred_doctors %}
+              <span>
+                Dr. {{referred_doctor.profile.full_name}}{% if not forloop.last %}<span>, </span>{% endif %}
+              </span>
+              {% endfor %}
             </div>
           </div>
 
           <div class="medicines">
-            <div class="heading">Rx</div>
+            <div class="heading">RX Medicine ({{medicines_length}})</div>
             <table>
               <thead>
                 <tr>
                   <th>Brand Name</th>
                   <th>Dose</th>
-                  <th>Regime</th>
                   <th>Duration</th>
-                  <th>Remarks</th>
+                  <th>Regime</th>
+                  <th>Timings</th>
                 </tr>
               </thead>
               <tbody>
+                {% for medicine in medicines %}
                 <tr>
-                  <td>INJ TRISOLS 100SP TARBAIN</td>
-                  <td>1</td>
-                  <td>1 + 1 + 1</td>
-                  <td>3 Days</td>
+                  <td>{{medicine.name}}</td>
+                  <td>{{medicine.dose_quantity}}</td>
+                  <td>{{medicine.dose_duration}}</td>
                   <td>
-                    take before breakfast + take after lunch + take after dinner
+                    {% for dose_regimen in medicine.dose_regimens %}
+                    <span>
+                      {{medicine.dose_quantity}}{% if not forloop.last %}<span> + </span>{% endif %}
+                    </span>
+                    {% endfor %}
+                  </td>
+                  <td>
+                    {% for dose_regimen in medicine.dose_regimens %}
+                    <span>
+                      {{dose_regimen}}{% if not forloop.last %}<span> + </span>{% endif %}
+                    </span>
+                    {% endfor %}
                   </td>
                 </tr>
-                <tr>
-                  <td>TAB SB COLD</td>
-                  <td>1/2</td>
-                  <td>1 + 1 + 1</td>
-                  <td>3 Days</td>
-                  <td>
-                    take before breakfast + take before dinner
-                  </td>
-                </tr>
-                <tr>
-                  <td>TAB TRAMOL 50 TAB TARAK MEHTA</td>
-                  <td>2 Drops</td>
-                  <td>1 + 2 + 1</td>
-                  <td>2 Days</td>
-                  <td>
-                    take after breakfast + take after lunch + take before dinner
-                  </td>
-                </tr>
+                {% endfor %}
               </tbody>
             </table>
             <p>
-              <strong>Note:</strong> Refer to the nearest hospital and get admitted at the earliest.
+              <strong>Note:</strong> {{prescription_note}}
             </p>
           </div>
         </div>

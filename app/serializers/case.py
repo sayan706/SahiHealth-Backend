@@ -45,8 +45,8 @@ class CaseSerializer(DynamicFieldsModelSerializer):
       # 'id',
       'created_by',
       'doctors',
-      'phone_number',
-      'address',
+      # 'phone_number',
+      # 'address',
       'is_active',
       'created_at',
       'updated_at'
