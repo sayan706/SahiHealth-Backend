@@ -20,10 +20,10 @@ class PatientAPIView(APIView):
     'phone_number',
     'gender',
     'age',
-    'address',
-    'allergy',
-    'other_diseases',
-    'other_habits'
+    # 'address',
+    # 'allergy',
+    # 'other_diseases',
+    # 'other_habits'
   ]
 
   def get(self, request, pk=None, format=None):

@@ -1,0 +1,458 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prescription PDF</title>
+  <style>
+    /* Base Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Container with fixed width */
+    .prescription-container {
+      /* Approximate A4 width */
+      width: 800px;
+      margin: 0px auto;
+      border: 1px solid #ddd;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Header */
+    .header {
+      height: 80%;
+      position: relative;
+
+      padding: 0px 16px;
+      padding-bottom: 6px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #000;
+    }
+
+    /* Left Section - Clinic Details */
+    .header-left {
+      width: 40%;
+      font-size: 14px;
+      text-align: left;
+      line-height: 1.2;
+      font-weight: bold;
+    }
+
+    .header-left .title img {
+      width: 220px;
+    }
+
+    /* Center - Red Cross Image */
+    .header-center img {
+      width: 140px;
+      height: auto;
+    }
+
+    /* Right Section - Doctor Info */
+    .header-right {
+      width: 40%;
+      display: flex;
+      align-items: flex-end;
+      flex-direction: column;
+      justify-content: center;
+
+      font-size: 12px;
+      line-height: 1.2;
+      text-align: right;
+      font-weight: bold;
+      /* Ensures it stays aligned to the right */
+    }
+
+    .header-right .doctor-logo {
+      /* Maintain proper size */
+      width: 60px;
+      height: auto;
+      display: block;
+      margin: 6px 0px;
+      /* Reduced space between logo & text */
+    }
+
+    .header-right .doctor-name {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 3px;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      /* Proper spacing */
+    }
+
+    .header-right .reg-number {
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .header-right .info {
+      color: #000;
+      font-size: 12px;
+    }
+
+    /* Main Body */
+    .main-body {
+      display: flex;
+    }
+
+    .main-body-left {
+      width: 28%;
+      display: flex;
+      font-size: 12px;
+      flex-direction: column;
+      border-right: 1px solid #000;
+    }
+
+    .vitals {
+      border-bottom: 1px solid #000;
+    }
+
+    .vitals .vitals-content {
+      padding: 6px 0px;
+      padding-left: 16px;
+    }
+
+    .findings-examination {
+      height: 134px;
+      border-bottom: 1px solid #000;
+    }
+
+    .findings-examination .findings-examination-content {
+      padding-top: 6px;
+      padding-left: 16px;
+    }
+
+    .women-address img {
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .main-body-right {
+      flex-grow: 1;
+    }
+
+    /* Patient Info */
+    .patient-info {
+      display: flex;
+      font-size: 12px;
+    }
+
+    .patient-info .basic-info {
+      width: 40%;
+      border-right: 1px solid #000;
+      border-bottom: 1px solid #000;
+    }
+
+    .allergy .allergy-content,
+    .basic-info .basic-info-content,
+    .disease-history .disease-history-content {
+      padding: 6px 0px;
+      padding-left: 16px;
+    }
+
+    .patient-info .allergy,
+    .patient-info .disease-history {
+      flex-grow: 1;
+      border-right: 1px solid #000;
+      border-bottom: 1px solid #000;
+    }
+
+    .patient-info .disease-history {
+      border-right: none
+    }
+
+    /* Prescription Info */
+    .prescription-info {
+      font-size: 12px;
+      padding: 10px 16px;
+
+      gap: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .prescription-info .other-stuff {
+      gap: 2px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .medicines .heading {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    /* Medicine Table */
+    table {
+      width: 100%;
+      font-size: 11px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      text-align: left;
+      border: 0.5px solid rgba(0, 0, 0, 0.1);
+    }
+
+    th {
+      padding: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      background-color: #c8ffbf;
+    }
+
+    td:nth-child(1) {
+      text-align: left;
+    }
+
+    td:nth-child(2),
+    td:nth-child(3),
+    td:nth-child(4),
+    td:nth-child(5) {
+      text-align: center;
+    }
+
+    tr:nth-last-of-type(odd) {
+      background-color: #efefef;
+    }
+
+    tbody tr td:nth-child(1) {
+      max-width: 100px;
+    }
+
+    tbody tr td:nth-child(5) {
+      max-width: 180px;
+    }
+
+    .signature-area {
+      position: relative;
+    }
+
+    .doctor-stamp {
+      z-index: 1;
+      right: 60px;
+      bottom: -180px;
+      position: absolute;
+    }
+
+    .doctor-stamp {
+      width: 140px;
+    }
+
+    /* Footer */
+    .footer-container {
+      border-top: 1px solid #000;
+    }
+
+    .footer-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    /* Page Breaks for PDF */
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="prescription-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <div class="title">
+          <img src="{% static 'assets/sahi-health-center.png' %}" alt="sahi-health-center.png" width="220">
+          <!-- <img src="./assets/sahi-health-center.png" alt="sahi-health-center.png"> -->
+        </div>
+        <div class="info">
+          <span>[पाठक मेडिकल के अंदर]</span><br>
+          <span>मोहनगढ़ विजरावन तिगैला, दिगौड़ा</span><br>
+          <span>मोबाइल नंबर: 7988992549</span><br>
+          <span>सेंटर का समय</span><br>
+          <span>हर दिन सुबह 10:00 बजे से शाम 6:00 बजे तक</span>
+        </div>
+      </div>
+
+      <!-- Center: Red Cross Icon -->
+      <div class="header-center">
+        <img src="{% static 'assets/sahi-health-logo.png' %}" alt="sahi-health-logo.png" width="140">
+        <!-- <img src="./assets/sahi-health-logo.png" alt="sahi-health-logo.png" width="140"> -->
+      </div>
+
+      <!-- Right Side -->
+      <div class="header-right">
+        <!-- Doctor Logo -->
+        <img class="doctor-logo" src="{% static 'assets/doctor-logo.png' %}" alt="doctor-logo.png" width="60">
+        <!-- <img class="doctor-logo" src="./assets/doctor-logo.png" alt="doctor-logo.png" width="60"> -->
+
+        <div class="doctor-name">डॉ. डी. एस. भदौरिया</div>
+        <div class="reg-number">एम.बी.बी.एस (ग्वालियर) Reg. No.MP2463</div>
+        <div class="info">
+          <span>मध्य प्रदेश</span><br>
+          <span>ई.एन.टी, कीमोथेरेपी, डायबिटीज़ में प्रशिक्षित</span><br>
+          <span>डॉक्टर का समय</span><br>
+          <span>हर दिन रोज़ दुपहर 2:00 बजे से शाम 5:00 बजे तक</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="main-body">
+      <div class="main-body-left">
+        <div class="vitals">
+          <div class="vitals-content">
+            <div><strong>Vitals:</strong></div>
+            <div><strong>BP-</strong> 100/120</div>
+            <div><strong>Pulse-</strong> 110</div>
+            <div><strong>Oxygen-</strong> 94%</div>
+            <div><strong>Body Temperature-</strong> 98F</div>
+            <div><strong>Weight-</strong> 70 KG</div>
+          </div>
+        </div>
+
+        <div class="findings-examination">
+          <div class="findings-examination-content">
+            <div><strong>Findings & Examination</strong></div>
+            <div>Acute fever, chills, vomiting</div>
+          </div>
+        </div>
+
+        <div class="women-address">
+          <img src="{% static 'assets/women-address.png' %}" alt="women-address.png">
+          <!-- <img src="./assets/women-address.png" alt="women-address.png"> -->
+        </div>
+      </div>
+
+      <div class="main-body-right">
+        <div class="patient-info">
+          <div class="basic-info">
+            <div class="basic-info-content">
+              <div><strong>Name:</strong> {{patient_name}}</div>
+              <div><strong>Age:</strong> 54</div>
+              <div><strong>Sex:</strong> Male</div>
+              <div><strong>Mobile No.:</strong> 1234567891</div>
+              <div><strong>Address:</strong> Mohangarh</div>
+            </div>
+          </div>
+
+          <div class="allergy">
+            <div class="allergy-content">
+              <div><strong>Allergy:</strong></div>
+              <div>None</div>
+            </div>
+          </div>
+
+          <div class="disease-history">
+            <div class="disease-history-content">
+              <div><strong>Disease History:</strong></div>
+              <div>Pneumonia</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="prescription-info">
+          <div class="other-stuff">
+            <div>
+              <strong>Chief Complaints:</strong>
+              <span>Acute fever,</span>
+              <span>chills,</span>
+              <span>vomiting</span>
+            </div>
+            <div>
+              <strong>Diagnosis:</strong>
+              <span>Viral</span>
+            </div>
+            <div>
+              <strong>Recommended Investigation:</strong>
+              <span>CBC</span>
+            </div>
+            <div>
+              <strong>Referred Doctors:</strong>
+              <span>N/A</span>
+            </div>
+          </div>
+
+          <div class="medicines">
+            <div class="heading">Rx</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Brand Name</th>
+                  <th>Dose</th>
+                  <th>Regime</th>
+                  <th>Duration</th>
+                  <th>Remarks</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>INJ TRISOLS 100SP TARBAIN</td>
+                  <td>1</td>
+                  <td>1 + 1 + 1</td>
+                  <td>3 Days</td>
+                  <td>
+                    take before breakfast + take after lunch + take after dinner
+                  </td>
+                </tr>
+                <tr>
+                  <td>TAB SB COLD</td>
+                  <td>1/2</td>
+                  <td>1 + 1 + 1</td>
+                  <td>3 Days</td>
+                  <td>
+                    take before breakfast + take before dinner
+                  </td>
+                </tr>
+                <tr>
+                  <td>TAB TRAMOL 50 TAB TARAK MEHTA</td>
+                  <td>2 Drops</td>
+                  <td>1 + 2 + 1</td>
+                  <td>2 Days</td>
+                  <td>
+                    take after breakfast + take after lunch + take before dinner
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>
+              <strong>Note:</strong> Refer to the nearest hospital and get admitted at the earliest.
+            </p>
+          </div>
+        </div>
+
+        <div class="signature-area">
+          <img src="{% static 'assets/stamp.png' %}" alt="stamp.png" class="doctor-stamp" width="140">
+          <!-- <img src="./assets/stamp.png" alt="stamp.png" class="doctor-stamp" width="140"> -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-container">
+      <img src="{% static 'assets/timings.png' %}" alt="timeings.png" class="footer-image">
+      <!-- <img src="./assets/timings.png" alt="timeings.png" class="footer-image"> -->
+    </footer>
+  </div>
+
+  <!-- Page Break Example -->
+  <div class="page-break"></div>
+</body>
+
+</html>

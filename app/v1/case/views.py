@@ -1,12 +1,72 @@
+import os
+
 from utils import exceptions
-from rest_framework.views import APIView
 from utils.response_handler import custom_response_handler
+from dotenv import load_dotenv
+from rest_framework.views import APIView
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
+from django.template.loader import render_to_string
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from app.models import Patient, Case
+from app.models import Doctor, Patient, Case
 from app.serializers.case import CaseSerializer, CreateCaseSerializer, UpdateCaseSerializer
+
+
+load_dotenv()
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def generate_prescription_html(request):
+  if request.method == 'POST':
+    case = None
+    case_id = request.query_params.get('case_id', None)
+    base_dir = os.path.join(settings.MEDIA_ROOT, 'case')
+    BACKEND_URL = os.getenv('BACKEND_URL', default='http://localhost:8000')
+
+    if not case_id:
+      raise exceptions.GenericException(
+        detail='Provide case_id in query params',
+        code='Case identifier missing'
+      )
+
+    try:
+      case = Case.objects.get(id=case_id)
+    except Case.DoesNotExist:
+      raise exceptions.DoesNotExistException(
+        detail=f'No case found with id {case_id}',
+        code='Case not found'
+      )
+
+    context = {
+      'patient_name': case.patient.full_name
+    }
+    rendered_template = render_to_string("prescription.html", context)
+
+    patient_full_name = '_'.join(case.patient.full_name.lower().split())
+    prescription_name = f'prescription-{patient_full_name}.html'
+    prescription_dir = os.path.join(base_dir, str(case_id))
+
+    os.makedirs(prescription_dir, exist_ok=True)
+    prescription_path = os.path.join(prescription_dir, prescription_name)
+
+    with open(prescription_path, 'wb') as destination:
+      destination.write(rendered_template.encode("utf-8"))
+
+    prescription_url = f'{BACKEND_URL}{settings.MEDIA_URL}case/{case_id}/{prescription_name}'
+
+    return custom_response_handler(
+      status=status.HTTP_201_CREATED,
+      message='Prescription has been successfully generated',
+      data={
+        'prescription_name': prescription_name,
+        'prescription_url': prescription_url,
+      }
+    )
 
 
 class CaseAPIView(APIView):
@@ -17,6 +77,7 @@ class CaseAPIView(APIView):
     data = None
     message = None
     query_params = request.query_params
+    doctor_id = query_params.get('doctor_id', None)
     patient_id = query_params.get('patient_id', None)
 
     if pk is not None:
@@ -36,10 +97,10 @@ class CaseAPIView(APIView):
           detail=f'No case found with id {pk}',
           code='Case not found'
         )
-    elif not (patient_id is not None and 'page_size' in query_params and 'page' in query_params):
+    elif not (doctor_id is not None and patient_id is not None and 'page_size' in query_params and 'page' in query_params):
       raise exceptions.GenericException(
-        detail='Provide patient_id, page_size & page in query params',
-        code='Patient identifier missing'
+        detail='Provide doctor_id, patient_id, page_size & page in query params',
+        code='Doctor, patient & page configuration missing'
       )
     else:
       try:
@@ -50,10 +111,18 @@ class CaseAPIView(APIView):
           code='Patient not found'
         )
 
+      try:
+        Doctor.objects.get(id=doctor_id)
+      except Doctor.DoesNotExist:
+        raise exceptions.DoesNotExistException(
+          detail=f'No doctor found with id {doctor_id}',
+          code='Doctor not found'
+        )
+
       current_page = 1
       page_size = int(query_params['page_size'])
 
-      cases = Case.objects.filter(patient_id=patient_id)
+      cases = Case.objects.filter(patient_id=patient_id, doctor_id=doctor_id)
       total_count = len(cases)
       paginator = Paginator(cases, page_size)
 

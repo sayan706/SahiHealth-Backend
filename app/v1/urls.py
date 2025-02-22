@@ -8,7 +8,7 @@ from app.v1.disease.views import DiseaseAPIView
 from app.v1.habit.views import HabitAPIView
 from app.v1.patient.views import PatientAPIView
 from app.v1.appointment.views import AppointmentAPIView
-from app.v1.case.views import CaseAPIView
+from app.v1.case.views import CaseAPIView, generate_prescription_html
 from app.v1.case_chief_complaint.views import CaseChiefComplaintAPIView
 from app.v1.case_finding.views import CaseFindingAPIView
 from app.v1.finding_image.views import FindingImageAPIView
@@ -36,6 +36,7 @@ urlpatterns=[
   path('habit/<int:pk>', HabitAPIView.as_view()),
   path('case', CaseAPIView.as_view()),
   path('case/<int:pk>', CaseAPIView.as_view()),
+  path('case/generate-prescription-html', generate_prescription_html),
   path('appointment', AppointmentAPIView.as_view()),
   path('speciality', SpecialityAPIView.as_view()),
   path('case-chief-complaint/<int:pk>', CaseChiefComplaintAPIView.as_view()),

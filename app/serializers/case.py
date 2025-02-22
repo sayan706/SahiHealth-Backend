@@ -42,7 +42,7 @@ class AppointmentSerializer(DynamicFieldsModelSerializer):
 class CaseSerializer(DynamicFieldsModelSerializer):
   patient = PatientSerializer(
     exclude=[
-      'id',
+      # 'id',
       'created_by',
       'doctors',
       'phone_number',
