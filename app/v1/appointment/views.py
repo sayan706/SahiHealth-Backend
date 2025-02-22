@@ -10,8 +10,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models.functions import TruncDate
 from app.models import Profile, Doctor, Case
-from app.serializers.patient import PatientSerializer, CreatePatientSerializer
 from app.serializers.case import AppointmentSerializer
+# from app.serializers.patient import PatientSerializer, CreatePatientSerializer
 
 
 def get_cases_by_date(doctor, date_in_str):
@@ -27,11 +27,14 @@ def get_cases_by_date(doctor, date_in_str):
 
   cases = Case.objects.filter(assigned_doctor=doctor, created_at__date=date_in_obj)
 
+  grouped_cases["Incomplete"] = []
+  grouped_cases["Completed"] = []
+
   for case in cases:
-    if case.is_completed:
-      grouped_cases["Complete"].append(case)
-    else:
+    if not case.is_completed:
       grouped_cases["Incomplete"].append(case)
+    else:
+      grouped_cases["Completed"].append(case)
 
   # Flatten grouped cases into a list for pagination
   flattened_cases = []
@@ -127,8 +130,13 @@ class AppointmentAPIView(APIView):
     if doctor_id is not None:
       try:
         doctor = Doctor.objects.get(id=doctor_id)
-        appointments = get_cases_grouped_by_date(doctor)
-        message = "Get appointments by doctor"
+
+        if 'date_in_str' in query_params:
+          appointments = get_cases_by_date(doctor, str(query_params['date_in_str']).lower())
+          message = "Get appointments by doctor and date"
+        else:
+          appointments = get_cases_grouped_by_date(doctor)
+          message = "Get appointments by doctor"
       except Doctor.DoesNotExist:
         raise exceptions.DoesNotExistException(
           detail=f'No doctor found with id {doctor_id}',
