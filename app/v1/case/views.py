@@ -12,6 +12,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from app.models import Doctor, Patient, Case
+from app.serializers.doctor import DoctorSerializer
 from app.serializers.case import CaseSerializer, CreateCaseSerializer, UpdateCaseSerializer
 
 
@@ -77,6 +78,9 @@ class CaseAPIView(APIView):
     data = None
     message = None
     query_params = request.query_params
+
+    doctor = None
+    serializedDoctor = None
     doctor_id = query_params.get('doctor_id', None)
     patient_id = query_params.get('patient_id', None)
 
@@ -97,10 +101,10 @@ class CaseAPIView(APIView):
           detail=f'No case found with id {pk}',
           code='Case not found'
         )
-    elif not (doctor_id is not None and patient_id is not None and 'page_size' in query_params and 'page' in query_params):
+    elif not (patient_id is not None and 'page_size' in query_params and 'page' in query_params):
       raise exceptions.GenericException(
-        detail='Provide doctor_id, patient_id, page_size & page in query params',
-        code='Doctor, patient & page configuration missing'
+        detail='Provide patient_id, page_size & page in query params',
+        code='Patient & page configuration missing'
       )
     else:
       try:
@@ -111,18 +115,37 @@ class CaseAPIView(APIView):
           code='Patient not found'
         )
 
-      try:
-        Doctor.objects.get(id=doctor_id)
-      except Doctor.DoesNotExist:
-        raise exceptions.DoesNotExistException(
-          detail=f'No doctor found with id {doctor_id}',
-          code='Doctor not found'
-        )
+      if doctor_id:
+        try:
+          doctor = Doctor.objects.get(id=doctor_id)
+          serializedDoctor = DoctorSerializer(
+            instance=doctor,
+            fields=[
+              'profile',
+              'speciality',
+              'degree'
+            ],
+            profile_fields=[
+              'first_name',
+              'last_name'
+            ]
+          )
+        except Doctor.DoesNotExist:
+          raise exceptions.DoesNotExistException(
+            detail=f'No doctor found with id {doctor_id}',
+            code='Doctor not found'
+          )
 
       current_page = 1
       page_size = int(query_params['page_size'])
 
-      cases = Case.objects.filter(patient_id=patient_id, doctor_id=doctor_id)
+      if doctor_id:
+        cases = Case.objects.filter(patient=patient_id, assigned_doctor=doctor_id)
+        message = 'Get cases by patient and assigned doctor'
+      else:
+        cases = Case.objects.filter(patient=patient_id)
+        message = 'Get cases by patient'
+
       total_count = len(cases)
       paginator = Paginator(cases, page_size)
 
@@ -156,9 +179,9 @@ class CaseAPIView(APIView):
         'current_page': current_page,
         'next_page': None if (paginator.num_pages - current_page) <= 0 else current_page + 1,
         'page_size': page_size,
+        **({'doctor': serializedDoctor.data} if doctor_id else {}),
         'values': serializedCases.data,
       }
-      message = 'Get cases by patient'
 
     return custom_response_handler(
       status=status.HTTP_200_OK,
