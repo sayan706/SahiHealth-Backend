@@ -180,3 +180,25 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Configure LogTailHandler to watch logs on betterstack
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": True,
+    'handlers': {
+        'logtail': {
+            'class': 'logtail.LogtailHandler',
+            'source_token': os.getenv('BETTERSTACK_SOURCE_TOKEN'),
+            'host': f'https://{os.getenv("BETTERSTACK_INGESTING_HOST")}',
+        },
+    },
+    "loggers": {
+        "": {
+            "handlers": [
+                "logtail",
+            ],
+            "level": "INFO",
+        },
+    },
+}

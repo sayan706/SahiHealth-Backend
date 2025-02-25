@@ -1,4 +1,5 @@
 import os
+import logging
 import traceback
 
 from datetime import datetime
@@ -42,6 +43,12 @@ def get_response(exc):
 			'error': str(exc)
 		}
 
+	logger = logging.getLogger(__name__)
+	logger.info(f'{status_code} - {message}', extra={
+		'errors': errors,
+		'stack_trace': stack_trace
+	})
+
 	return Response(
 		status=status_code,
 		data={
@@ -64,5 +71,8 @@ def global_exception_handler(exc, context):
 
 	if exc:
 		return get_response(exc)
+
+	logger = logging.getLogger(__name__)
+	logger.info(f'exception handler - {response}')
 
 	return response
