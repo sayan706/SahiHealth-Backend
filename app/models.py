@@ -196,6 +196,7 @@ class Case(models.Model):
   note = models.TextField(blank=True, null=True)
   follow_up_id = models.PositiveBigIntegerField(blank=True, null=True)
   follow_up_date = models.DateTimeField(blank=True, null=True)
+  is_follow_up_created = models.BooleanField(default=False)
   is_completed = models.BooleanField(default=False)
   is_active = models.BooleanField(default=True)
   # created_at = models.DateTimeField(default=datetime.now)
@@ -212,7 +213,6 @@ class Case(models.Model):
 class CaseChiefComplaint(models.Model):
   DURATION_UNIT_CHOICES = [
     ('DAY', 'Day'),
-    # ('WEEK', 'Week'),
   ]
 
   # SEVERITY_CHOICES = [

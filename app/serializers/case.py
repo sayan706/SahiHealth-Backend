@@ -42,7 +42,6 @@ class AppointmentSerializer(DynamicFieldsModelSerializer):
 class CaseSerializer(DynamicFieldsModelSerializer):
   patient = PatientSerializer(
     exclude=[
-      # 'id',
       'created_by',
       'doctors',
       # 'phone_number',
@@ -97,6 +96,7 @@ class CaseSerializer(DynamicFieldsModelSerializer):
       'note',
       'follow_up_id',
       'follow_up_date',
+      'is_follow_up_created',
       'is_completed',
       'prescription',
       'is_active',

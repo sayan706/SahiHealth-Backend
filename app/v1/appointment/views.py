@@ -27,8 +27,10 @@ def get_cases_by_date(doctor, date_in_str):
 
   cases = Case.objects.filter(assigned_doctor=doctor, created_at__date=date_in_obj)
 
-  grouped_cases["Incomplete"] = []
-  grouped_cases["Completed"] = []
+  # print(f"cases exists: {cases.exists()}")
+  if cases.exists():
+    grouped_cases["Incomplete"] = []
+    grouped_cases["Completed"] = []
 
   for case in cases:
     if not case.is_completed:
