@@ -65,7 +65,7 @@ class CaseSerializer(DynamicFieldsModelSerializer):
   )
 
   prescription = PrescriptionSerializer(
-    exclude=['id']
+    # exclude=['id']
   )
 
   chief_complaints = CaseChiefComplaintSerializer(many=True)
