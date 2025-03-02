@@ -41,7 +41,7 @@ class PatientAPIView(APIView):
           exclude=['doctors']
         )
         data = serializedPatient.data
-        message = "Get Patient"
+        message = "Get patient"
       except Patient.DoesNotExist:
         raise exceptions.DoesNotExistException(
           detail=f'No patient found with id {pk}',
@@ -58,11 +58,14 @@ class PatientAPIView(APIView):
 
     if data is not None:
       pass
+    elif 'all' in query_params:
+      patients = Patient.objects.all()
+      message = "Get all patients"
     elif doctor_id is not None:
       try:
         doctor = Doctor.objects.get(id=doctor_id)
         patients = Patient.objects.filter(doctors=doctor)
-        message = "Get Patients by Doctor"
+        message = "Get patients by doctor"
       except Doctor.DoesNotExist:
         raise exceptions.DoesNotExistException(
           detail=f'No doctor found with id {doctor_id}',
@@ -73,7 +76,7 @@ class PatientAPIView(APIView):
         try:
           doctor = Doctor.objects.get(profile=profile)
           patients = Patient.objects.filter(doctors=doctor)
-          message = "Get Patients by Current Doctor"
+          message = "Get patients by current doctor"
         except Doctor.DoesNotExist:
           raise exceptions.DoesNotExistException(
             detail=f'No doctor found with this profile',
@@ -81,7 +84,7 @@ class PatientAPIView(APIView):
           )
       else:
         patients = Patient.objects.filter(created_by=profile)
-        message = "Get Patients by Creator"
+        message = "Get patients by creator"
 
     if data is not None:
       pass
