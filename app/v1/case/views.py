@@ -185,10 +185,10 @@ class CaseAPIView(APIView):
       page_size = int(query_params['page_size'])
 
       if doctor_id:
-        cases = Case.objects.filter(patient=patient_id, assigned_doctor=doctor_id)
+        cases = Case.objects.filter(patient=patient_id, assigned_doctor=doctor_id).order_by('-created_at')
         message = 'Get cases by patient and assigned doctor'
       else:
-        cases = Case.objects.filter(patient=patient_id)
+        cases = Case.objects.filter(patient=patient_id).order_by('-created_at')
         message = 'Get cases by patient'
 
       total_count = len(cases)
@@ -363,9 +363,9 @@ class CaseAPIView(APIView):
           # Clone Many-to-Many referred doctors
           new_prescription.referred_doctors.set(original_prescription.referred_doctors.all())
 
-          # Update the is_follow_up_created field of original case
-          case.is_follow_up_created = True
-          case.save()
+        # Update the is_follow_up_created field of original case
+        case.is_follow_up_created = True
+        case.save()
 
       serializedFollowUpCase = CaseSerializer(
         instance=follow_up_case,
