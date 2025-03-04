@@ -168,3 +168,57 @@ class PatientAPIView(APIView):
         detail=serializedCreatePatient.errors,
         code='Invalid request data'
       )
+
+  def patch(self, request, pk, format=None):
+    patient = None
+
+    try:
+      patient = Patient.objects.get(id=pk)
+    except Patient.DoesNotExist:
+      raise exceptions.DoesNotExistException(
+        detail=f'No patient found with id {pk}',
+        code='Patient not found'
+      )
+
+    serializedCreatePatient = CreatePatientSerializer(
+      instance=patient,
+      data=request.data,
+      partial=True
+    )
+
+    if serializedCreatePatient.is_valid():
+      updatedPatient = serializedCreatePatient.save()
+      serializedPatient = PatientSerializer(
+        instance=updatedPatient,
+        exclude=['doctors']
+      )
+
+      return custom_response_handler(
+        status=status.HTTP_200_OK,
+        message='Patient updated successfully',
+        data=serializedPatient.data
+      )
+    else:
+      raise exceptions.InvalidRequestBodyException(
+        detail=serializedCreatePatient.errors,
+        code='Invalid request data'
+      )
+
+  def delete(self, request, pk, format=None):
+    patient = None
+
+    try:
+      patient = Patient.objects.get(id=pk)
+    except Patient.DoesNotExist:
+      raise exceptions.DoesNotExistException(
+        detail=f'No patient found with id {pk}',
+        code='Patient not found'
+      )
+
+    patient.delete()
+
+    return custom_response_handler(
+      status=status.HTTP_200_OK,
+      message='Patient has been successfully removed',
+      data=None
+    )

@@ -111,10 +111,10 @@ class CreatePatientSerializer(serializers.ModelSerializer):
     return attrs
 
   def create(self, validated_data):
-    doctor = validated_data.pop('doctor')
-    diseases = validated_data.pop('diseases')
-    habits = validated_data.pop('habits')
+    diseases = validated_data.pop('diseases', [])
+    habits = validated_data.pop('habits', [])
     # created_by = validated_data.pop('created_by')
+    doctor = validated_data.pop('doctor', None)
 
     # Create patient instance
     patient = Patient.objects.create(**validated_data)
@@ -132,3 +132,29 @@ class CreatePatientSerializer(serializers.ModelSerializer):
       patient.habits.add(habit)
 
     return patient
+
+  def update(self, instance, validated_data):
+    diseases = validated_data.pop('diseases', None)
+    habits = validated_data.pop('habits', None)
+
+    for attr, value in validated_data.items():
+      setattr(instance, attr, value)
+
+    instance.save()
+
+    if diseases is not None:
+      instance.diseases.clear()
+    if habits is not None:
+      instance.habits.clear()
+
+    # Associate diseases with the patient
+    if diseases is not None:
+      for disease in diseases:
+        instance.diseases.add(disease)
+
+    # Associate habits with the patient
+    if habits is not None:
+      for habit in habits:
+        instance.habits.add(habit)
+
+    return instance
