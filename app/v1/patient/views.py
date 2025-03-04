@@ -59,12 +59,12 @@ class PatientAPIView(APIView):
     if data is not None:
       pass
     elif 'all' in query_params:
-      patients = Patient.objects.all()
+      patients = Patient.objects.all().order_by('-created_at')
       message = "Get all patients"
     elif doctor_id is not None:
       try:
         doctor = Doctor.objects.get(id=doctor_id)
-        patients = Patient.objects.filter(doctors=doctor)
+        patients = Patient.objects.filter(doctors=doctor).order_by('-created_at')
         message = "Get patients by doctor"
       except Doctor.DoesNotExist:
         raise exceptions.DoesNotExistException(
@@ -75,7 +75,7 @@ class PatientAPIView(APIView):
       if profile.role == 'DOCTOR' and query_params.get('doctor', None) == 'true':
         try:
           doctor = Doctor.objects.get(profile=profile)
-          patients = Patient.objects.filter(doctors=doctor)
+          patients = Patient.objects.filter(doctors=doctor).order_by('-created_at')
           message = "Get patients by current doctor"
         except Doctor.DoesNotExist:
           raise exceptions.DoesNotExistException(
@@ -83,7 +83,7 @@ class PatientAPIView(APIView):
             code='Doctor not found'
           )
       else:
-        patients = Patient.objects.filter(created_by=profile)
+        patients = Patient.objects.filter(created_by=profile).order_by('-created_at')
         message = "Get patients by creator"
 
     if data is not None:
